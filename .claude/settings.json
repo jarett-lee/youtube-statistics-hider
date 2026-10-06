@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npx playwright *)",
+      "Bash(npm run *)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(node -e ' *)"
+    ]
+  }
+}

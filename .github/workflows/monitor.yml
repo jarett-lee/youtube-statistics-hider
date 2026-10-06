@@ -1,0 +1,47 @@
+name: Monitor
+
+on:
+  schedule:
+    # Twice a day. GitHub may delay scheduled runs when it's busy.
+    - cron: "17 3,15 * * *"
+  workflow_dispatch:
+  push:
+    paths:
+      - "src/**"
+      - "monitor/**"
+      - ".github/workflows/monitor.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: monitor
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run monitor
+        run: npm run monitor
+
+      - name: Upload screenshots and DOM snapshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: monitor-output-${{ github.run_id }}
+          path: monitor-output/
+          retention-days: 30

@@ -17,6 +17,31 @@ The extension isn't published to the Chrome Web Store yet. To load it from sourc
 
 After you change the code, click the reload icon on the extension's card in `chrome://extensions`, then reload the YouTube tab.
 
+## Running the monitor
+
+The monitor loads a set of YouTube pages in Playwright's Chromium with the extension installed, and scans the visible text for stats the extension should have hidden. It runs in GitHub Actions (`.github/workflows/monitor.yml`) twice a day, on pushes that change the extension or the monitor, and on demand from the Actions tab.
+
+To run it locally (requires Node.js 22 or later):
+
+```sh
+npm install
+npx playwright install chromium
+npm run monitor
+```
+
+Each page gets one of three results:
+
+- **pass:** no leftover stats.
+- **fail:** leftover stats were found, or the extension didn't load. A page that fails is loaded a second time before the failure counts.
+- **inconclusive:** YouTube showed a bot check or consent page instead of content, or the page didn't load. This doesn't fail the run.
+
+Screenshots, DOM snapshots and a summary of each run are saved to `monitor-output/`. In GitHub Actions they're uploaded as a run artifact, and the summary appears on the run's page.
+
+Two environment variables change where the monitor looks and writes:
+
+- `MONITOR_EXTENSION_DIR` loads a different copy of the extension. It defaults to `src`.
+- `MONITOR_OUTPUT_DIR` changes the output folder. It defaults to `monitor-output`.
+
 ## Why
 
 YouTube changes its UI often and A/B tests layouts, so different users see different page structures. Most statistics hiders depend on hand-written CSS selectors, and they break without warning whenever the markup shifts. This project treats breakage as expected: it checks for failures automatically and proposes fixes, and a human approves each fix before it ships.
