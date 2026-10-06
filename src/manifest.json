@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Statistics Hider",
+  "version": "0.1.0",
+  "description": "Hides engagement numbers on YouTube.",
+  "action": {
+    "default_title": "YouTube Statistics Hider",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ]
+}

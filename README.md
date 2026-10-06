@@ -2,9 +2,20 @@
 
 A Chrome extension that hides engagement numbers on YouTube (views, likes, subscriber counts, comment counts), and uses AI agents to repair itself when YouTube's layout changes.
 
-> **Status:** early design. Nothing described below is built yet.
+> **Status:** early development. This README describes the planned design, and some features may not be built yet.
 
 > **AI usage:** all code and documentation is written by AI agents unless marked otherwise. See [AI_USAGE.md](AI_USAGE.md).
+
+## Loading the extension
+
+The extension isn't published to the Chrome Web Store yet. To load it from source:
+
+1. Open `chrome://extensions` in Chrome.
+2. Turn on **Developer mode** in the top-right corner.
+3. Click **Load unpacked** and select the `src` folder.
+4. Reload any YouTube tabs that were already open. Chrome doesn't add the extension to pages that were loaded before it was installed.
+
+After you change the code, click the reload icon on the extension's card in `chrome://extensions`, then reload the YouTube tab.
 
 ## Why
 
