@@ -21,7 +21,7 @@ After you change the code, click the reload icon on the extension's card in `chr
 
 The monitor loads a set of YouTube pages in Playwright's Chromium with the extension installed, and scans the visible text for stats the extension should have hidden. It runs in GitHub Actions (`.github/workflows/monitor.yml`) twice a day, on pushes that change the extension or the monitor, and on demand from the Actions tab.
 
-To run it locally (requires Node.js 22 or later):
+To run it locally (requires Node.js 22 or later; CI uses 24):
 
 ```sh
 npm install
