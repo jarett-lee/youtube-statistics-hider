@@ -35,7 +35,31 @@ Each page gets one of three results:
 - **fail:** leftover stats were found, or the extension didn't load. A page that fails is loaded a second time before the failure counts.
 - **inconclusive:** YouTube showed a bot check or consent page instead of content, or the page didn't load. This doesn't fail the run.
 
-Screenshots, DOM snapshots and a summary of each run are saved to `monitor-output/`. In GitHub Actions they're uploaded as a run artifact, and the summary appears on the run's page.
+Screenshots, DOM snapshots and a summary of each run are saved to `monitor-output/`. In GitHub Actions, the summary appears on the run's page.
+
+### Run artifacts
+
+In GitHub Actions, the contents of `monitor-output/` are uploaded as an artifact named `monitor-output-<run id>`. To get it, open the run from the **Actions** tab and download it from the **Artifacts** section at the bottom of the page. It downloads as a zip with one folder per page and one subfolder per attempt:
+
+```
+monitor-output/
+  report.json          results for every page and attempt, including each leftover stat found
+  summary.md           the same table shown on the run's page
+  watch/
+    attempt-1/
+      screenshot.png   full-page screenshot
+      dom.html         DOM snapshot of the rendered page, with the extension running
+      result.json      result for this attempt
+```
+
+- **Retention:** artifacts are deleted after 30 days, set by `retention-days` in the workflow. The run page, its summary and its logs stay after the artifact expires. You can delete an artifact early from the run page.
+- **Size:** a run where every page passes is about 9 MB compressed. Failing pages are loaded twice, so failing runs are larger.
+- **Storage cost:** artifact storage is free for public repositories. In a private repository it counts toward the account's Actions storage quota (500 MB on the free plan), so retention would need to be shorter.
+- **Access:** anyone who can see the repository and is signed in to GitHub can download artifacts.
+
+Artifacts are for debugging recent runs. The long-term archive of DOM snapshots described under [Regression archive](#regression-archive) needs separate, permanent storage.
+
+### Configuration
 
 Two environment variables change where the monitor looks and writes:
 
