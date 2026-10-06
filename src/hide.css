@@ -1,0 +1,34 @@
+/*
+ * Hiding rules. Page-specific rules are scoped through the
+ * data-yt-stats-hider-page attribute that content.js keeps up to date.
+ */
+
+/* Watch page: view count under the title (collapsed and expanded description). */
+html[data-yt-stats-hider-page="watch"] ytd-watch-info-text #view-count,
+/* Watch page: like count on the like button, including the fullscreen quick-action button. */
+html[data-yt-stats-hider-page="watch"] like-button-view-model .ytSpecButtonShapeNextButtonTextContent,
+/* Watch page: like count in layouts where the like button has no like-button-view-model wrapper.
+   Identified by its aria-label, which is English only. */
+html[data-yt-stats-hider-page="watch"] #top-level-buttons-computed button[aria-label^="like this video" i] .ytSpecButtonShapeNextButtonTextContent,
+/* Watch page: "Likes" row in the stats list some layouts show in the expanded description. */
+html[data-yt-stats-hider-page="watch"] yt-list-item-view-model:has(yt-list-item-like-count-view-model),
+/* Watch page: channel subscriber count under the channel name. */
+html[data-yt-stats-hider-page="watch"] #owner-sub-count,
+
+/* All pages: elements content.js matched by their text, such as "1,234 views" with no
+   class of its own. Each text rule in content.js is already limited to where it applies. */
+[data-yt-stats-hider-hidden],
+/* All pages: "Views" row in the stats list some layouts show in the expanded description. */
+yt-list-item-view-model:has(yt-list-item-view-count-view-model),
+/* All pages: view count under Shorts cards. The subhead holds only the view count. */
+.shortsLockupViewModelHostMetadataSubhead,
+
+/* All pages: view count in video metadata rows ("19K • 3y ago") on video cards, search
+   results and the watch-page sidebar. The visible text is just a number, so the
+   aria-label ("19 thousand views") identifies it; English only. Also hides the play
+   icon before it and the delimiter after it. */
+.ytContentMetadataViewModelMetadataText:is([aria-label$=" views" i], [aria-label$=" view" i]),
+.ytContentMetadataViewModelLeadingIcon:has(+ .ytContentMetadataViewModelMetadataText:is([aria-label$=" views" i], [aria-label$=" view" i])),
+.ytContentMetadataViewModelMetadataText:is([aria-label$=" views" i], [aria-label$=" view" i]) + .ytContentMetadataViewModelDelimiter {
+  display: none !important;
+}
