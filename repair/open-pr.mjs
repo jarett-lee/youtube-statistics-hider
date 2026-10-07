@@ -42,7 +42,9 @@ function collectScreenshots(pages, dir) {
     const entry = { page, before: [], after: [] };
     for (const [kind, base] of [["before", EVIDENCE_DIR], ["after", path.join(OUTPUT_DIR, "after")]]) {
       const attempt = lastAttempt(path.join(base, page));
-      for (const n of [1, 2]) {
+      // Pages can have any number of viewport screenshots (the watch page has
+      // three, the last at the comments); 5 is a safe upper bound.
+      for (const n of [1, 2, 3, 4, 5]) {
         const src = attempt && path.join(base, page, attempt, "with-extension", `view-${n}.png`);
         if (!src || !fs.existsSync(src)) continue;
         const rel = `${RUN_ID}/${page}/${kind}-${n}.png`;
