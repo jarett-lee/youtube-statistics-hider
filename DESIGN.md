@@ -1,6 +1,6 @@
 # Design
 
-The technical design of the YouTube Statistics Hider: how its parts work, how to run them, and how the project will be evaluated. For the process around them, including who decides what, see [WORKFLOW.md](WORKFLOW.md). Parts marked **(planned)** aren't built yet.
+The technical design of the YouTube Statistics Hider: how its parts work, how to run them, and how the project will be evaluated. For the process around them, including who decides what, see [WORKFLOW.md](WORKFLOW.md). Parts marked **(planned)** were designed but aren't built. The project is now a finished proof of concept with a fixed scope, so they aren't expected to be ([COSTS.md](COSTS.md) explains why).
 
 ## Components
 

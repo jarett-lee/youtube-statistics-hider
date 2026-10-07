@@ -2,7 +2,7 @@
 
 A Chrome extension that hides engagement numbers on YouTube, such as view, like and subscriber counts, and uses AI agents to repair itself when YouTube's layout changes.
 
-> **Status:** early development. The extension and its self-repair automation work; several planned parts aren't built yet.
+> **Status:** finished proof of concept, in maintenance mode. The scope is fixed, and the project is left running to see how it handles YouTube's changes over time, such as new A/B tests.
 
 ## An AI agent experiment
 
@@ -14,7 +14,7 @@ The question it explores: can AI agents keep a fragile browser extension working
 - **A repair agent** (Claude) diagnoses a breakage, edits the hiding rules, tests its fix and opens a pull request.
 - **The maintainer** merges each repair PR, or refines it with an AI coding agent first.
 
-**How it's going:** the extension, the checks and the repair agent are built and running. [METRICS.md](https://github.com/jarett-lee/youtube-statistics-hider/blob/metrics/METRICS.md) tracks how often the extension is broken, how often the wrong thing is hidden, how often repairs work and what they cost, updated after every run.
+**How it's going:** the extension, the checks and the repair agent are built and running. [METRICS.md](https://github.com/jarett-lee/youtube-statistics-hider/blob/metrics/METRICS.md) tracks how often the extension is broken, how often the wrong thing is hidden, how often repairs work and what they cost, updated after every run. [COSTS.md](COSTS.md) explains what it spends: under $1 a month when nothing breaks.
 
 ## Using the extension
 
@@ -23,8 +23,9 @@ The extension will be published to the Chrome Web Store in the future. It isn't 
 It only works when YouTube is in English for now. It currently hides:
 
 - view counts, on every page
-- the like count on the video page
-- the channel's subscriber count under the video
+- like counts on the video page, including on comments
+- the channel's subscriber count under the video and on the channel card in its description
+- the subscriber count on channel pages
 
 ## How it keeps working
 
@@ -58,6 +59,7 @@ npm run monitor
 - [DESIGN.md](DESIGN.md): how each part works, running the monitor and the repair agent, GitHub setup, and how the project will be evaluated.
 - [WORKFLOW.md](WORKFLOW.md): the process, who decides what, and known gaps.
 - [TESTING.md](TESTING.md): which workflow paths have been tested end to end.
+- [COSTS.md](COSTS.md): what it costs to run, and the spending limits.
 
 | Folder | Contents |
 |---|---|

@@ -203,7 +203,7 @@ Ordered by priority:
 
 ## Planned parts of the workflow
 
-These are described in [DESIGN.md](DESIGN.md#components) and not built yet:
+These are described in [DESIGN.md](DESIGN.md#components) but weren't built: the project is a finished proof of concept with a fixed scope ([COSTS.md](COSTS.md)).
 
 - **User reports:** viewers report missed stats or missing content from the extension popup. Reports would join monitor failures as a second way into the repair job, and they're the main way to learn about layouts the monitor never sees, such as signed-in and A/B-test variants.
 - **Status feed:** the popup shows known breakages and the viewer's layout variant, so viewers know a problem is already being worked on.

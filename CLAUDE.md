@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A Chrome extension (Manifest V3) that hides YouTube engagement stats, kept working by AI agents: a Playwright monitor in GitHub Actions detects breakages, and a Claude repair agent drafts fixes as pull requests for the maintainer to approve. The project is an experiment in using AI agents as much as possible, so all code and documentation is AI-written unless marked otherwise ([AI_USAGE.md](AI_USAGE.md)).
 
+It's a finished proof of concept in maintenance mode: the scope is fixed. Don't add pages to the monitor, widen the vision check or add anything else that costs money without asking first ([COSTS.md](COSTS.md)).
+
 ## Audiences
 
 Write each document for its readers, and keep these in mind when deciding what goes where.
@@ -16,6 +18,7 @@ Write each document for its readers, and keep these in mind when deciding what g
 | [WORKFLOW.md](WORKFLOW.md) | The maintainer and contributors; planning what to automate next | Organized around people's goals and decisions (goal-directed task analysis), not around the code |
 | [DESIGN.md](DESIGN.md) | Developers working on the code | Complete and accurate: how each part works, how to run it, setup |
 | [TESTING.md](TESTING.md) | The maintainer | One row per workflow path, with its test status and the run that proves it. Add a row when the workflow gains a path |
+| [COSTS.md](COSTS.md) | People following the experiment, or curious what it costs to run | Plain numbers and limits; update it when costs or limits change |
 | [AI_USAGE.md](AI_USAGE.md) | Anyone | A plain statement of how AI is used |
 | Repair PR descriptions (written by [repair/open-pr.mjs](repair/open-pr.mjs) and the agent) | The maintainer, deciding whether to approve | The evidence needed to approve quickly |
 ## Conventions
