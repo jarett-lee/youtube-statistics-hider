@@ -1,0 +1,85 @@
+name: Verify repair PR
+
+# Re-runs verification for a repair PR, for example a draft after you've
+# updated it: the monitor checks every page, with the vision check, against the
+# PR's rules. If everything passes, the PR is marked ready for review.
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "Repair PR number"
+        required: true
+        type: number
+
+permissions:
+  contents: read
+
+# Shares the monitor's group, so a verification and a monitor run never overlap.
+concurrency:
+  group: monitor
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  verify:
+    # Run from the default branch: the Claude API federation rule only trusts
+    # it. The PR's rules are checked out below.
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-24.04
+    # See monitor.yml: the tag must match the playwright version in package.json.
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --user 1001
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write # to comment and mark the PR ready
+      id-token: write # for Workload Identity Federation with the Claude API
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      # The monitor and scripts come from the default branch; only the hiding
+      # rules come from the PR, since repair PRs only change src/.
+      - name: Check out the PR's hiding rules
+        env:
+          PR: ${{ inputs.pr }}
+        run: |
+          git fetch --depth=1 origin "pull/$PR/head"
+          git checkout FETCH_HEAD -- src/
+          git status --short
+
+      - run: npm ci
+
+      - name: Set up Claude API credentials
+        run: bash .github/anthropic-auth.sh
+        env:
+          FEDERATION_RULE_ID: ${{ vars.ANTHROPIC_FEDERATION_RULE_ID }}
+          ORGANIZATION_ID: ${{ vars.ANTHROPIC_ORGANIZATION_ID }}
+          SERVICE_ACCOUNT_ID: ${{ vars.ANTHROPIC_SERVICE_ACCOUNT_ID }}
+          WORKSPACE_ID: ${{ vars.ANTHROPIC_WORKSPACE_ID }}
+
+      # A failing page is a result to report, not a reason to stop here.
+      - name: Run monitor with the vision check
+        run: npm run monitor || true
+        env:
+          MONITOR_VISION: 1
+
+      - name: Update the pull request
+        run: node repair/verify-pr.mjs "$PR"
+        env:
+          PR: ${{ inputs.pr }}
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Upload screenshots and DOM snapshots
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: verify-pr-${{ inputs.pr }}-${{ github.run_id }}
+          path: monitor-output/
+          retention-days: 30

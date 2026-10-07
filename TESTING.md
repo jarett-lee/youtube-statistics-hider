@@ -31,4 +31,6 @@ The workflow paths (see [WORKFLOW.md](WORKFLOW.md)) and whether each has been te
 |---|---|---|---|---|
 | 12 | Merge the repair PR > next run passes | ⬜ | | Merging PR #4 tests this |
 | 13 | Close the repair PR > next failure starts a new repair | ⬜ | | |
-| 14 | Update the repair PR > review again > merge | ⬜ | | |
+| 14 | Update the repair PR > Verify repair PR > review again > merge | ⬜ | | |
+| 15 | Draft repair PR > Verify repair PR > every page passes with the vision check > marked ready for review | ⬜ | | PR #6 can test this, once the vision check works in repairs |
+| 16 | Verify repair PR > a page still fails > comment lists the problems, PR stays a draft | ⬜ | | |

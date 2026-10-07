@@ -24,6 +24,7 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { z } from "zod";
 import { IN_SCOPE, MUST_STAY_VISIBLE, OUT_OF_SCOPE } from "../monitor/scope.mjs";
+import { verificationProblems, visionStatus } from "./verification.mjs";
 
 const run = promisify(execFile);
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -398,18 +399,11 @@ async function main() {
     console.log("Running the final monitor check on all pages...");
     after = await runMonitor(null, path.join(OUTPUT_DIR, "after"));
   }
-  const visionOf = (r) => r.attempts.at(-1).vision?.status ?? "not run";
-  const pages = after?.results.map((r) => ({ page: r.name, status: r.status, vision: visionOf(r) })) ?? [];
+  const pages = after?.results.map((r) => ({ page: r.name, status: r.status, vision: visionStatus(r) })) ?? [];
   const result = {
     changed_files: changed,
-    // Verified only if every page that failed now passes, nothing else fails,
-    // and the vision check confirmed every page that passed (so nothing that
-    // should stay visible was hidden).
-    verified:
-      Boolean(after) &&
-      after.results.every((r) => r.status !== "fail") &&
-      after.results.every((r) => r.status !== "pass" || visionOf(r) === "pass") &&
-      failures.every((f) => after.results.find((r) => r.name === f.page)?.status === "pass"),
+    // See repair/verification.mjs: the pages that failed must now pass too.
+    verified: Boolean(after) && verificationProblems(after, failures.map((f) => f.page)).length === 0,
     after: pages,
     failed_pages: failures.map((f) => f.page),
     stopped,

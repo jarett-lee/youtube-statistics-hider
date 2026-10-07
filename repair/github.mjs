@@ -31,6 +31,19 @@ export async function github(method, path, body, { allow = [] } = {}) {
   return text ? JSON.parse(text) : null;
 }
 
+/** Calls the GitHub GraphQL API. Some actions, like marking a draft PR ready, have no REST endpoint. */
+export async function graphql(query, variables) {
+  const url = process.env.GITHUB_GRAPHQL_URL || "https://api.github.com/graphql";
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${process.env.GH_TOKEN}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ query, variables }),
+  });
+  const json = await response.json();
+  if (!response.ok || json.errors) throw new Error(`GitHub GraphQL: ${response.status} ${JSON.stringify(json.errors ?? json)}`);
+  return json.data;
+}
+
 /** Open pull requests labeled auto-repair. Needs the pull-requests: read permission. */
 export async function openRepairPrs() {
   const prs = await github("GET", "/pulls?state=open&per_page=100");

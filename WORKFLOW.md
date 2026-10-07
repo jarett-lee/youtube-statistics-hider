@@ -63,7 +63,9 @@ flowchart TD
     pr --> review["Maintainer reviews the evidence"]
     draft --> update
     review -- "needs changes" --> update["Maintainer updates the PR"]
-    update --> review
+    update --> verify["Maintainer runs Verify repair PR<br/>monitor with the vision check<br/>against the PR's rules"]
+    verify -- "verified: marked ready" --> pr
+    verify -- "not verified" --> update
     review -- "approved" --> merge["Maintainer merges"]
     review -- "not worth fixing" --> closed["Maintainer closes the PR"]
     merge --> ship["Maintainer reloads the extension<br/>(no automatic release yet)"]
@@ -71,7 +73,7 @@ flowchart TD
     classDef human fill:#fde68a,stroke:#92400e,color:#1c1917
     classDef agent fill:#ddd6fe,stroke:#5b21b6,color:#1c1917
     class manual,review,update,merge,closed,ship human
-    class vision,repair agent
+    class vision,repair,verify agent
 ```
 
 Yellow steps are done by a person (updating a PR, usually with an AI coding agent's help) and purple steps by an AI agent; the rest is automation.
@@ -130,7 +132,7 @@ What counts as a stat to hide, and what must stay visible, is defined in [monito
 |---|---|
 | **Actor** | Human, often with an AI coding agent |
 | **Decision** | Does the evidence (the final monitor run, including the vision check) show that the fix hides every stat and only stats? Is any change to `src/content.js` safe to run in viewers' browsers? |
-| **Then** | One of: merge; close with a comment; or update the PR, usually with an AI coding agent, and review again. Merging or closing allows the next repair to run |
+| **Then** | One of: merge; close with a comment; or update the PR, usually with an AI coding agent, then run the **Verify repair PR** workflow on it. If every page passes, including the vision check, a draft is marked ready for review. Merging or closing allows the next repair to run |
 
 ### 7. The fix reaches viewers
 
@@ -170,7 +172,7 @@ Each of these is a moment where a person has to understand something and decide.
 - **Goal:** turn a PR that isn't quite right, or an unverified draft, into one worth merging.
 - **Information needed:** what the agent tried, what still fails and why it stopped.
 - **Today:** the PR description says what the agent changed and why a draft isn't verified (still failing, or the agent hit a limit). The repair artifact (`repair-output-<run id>`) has the agent's monitor runs, and the failed run's artifact has the original evidence.
-- **How:** check out the PR branch and work with an AI coding agent such as Claude Code, giving it the PR description and those artifacts. Push the update to the PR branch, then review again.
+- **How:** check out the PR branch and work with an AI coding agent such as Claude Code, giving it the PR description and those artifacts. Push the update to the PR branch, then run the **Verify repair PR** workflow from the Actions tab with the PR's number. If every page passes, including the vision check, it marks a draft ready for review and comments the results; if not, it comments what still fails.
 - **Or:** close the PR, which lets the next failing run try again from scratch.
 
 ### Keep repairs unblocked
