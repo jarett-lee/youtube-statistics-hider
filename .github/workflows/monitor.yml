@@ -32,6 +32,12 @@ concurrency:
   group: monitor
   cancel-in-progress: false
 
+# Inside a container, run steps default to sh. Use bash everywhere, as on a
+# normal runner.
+defaults:
+  run:
+    shell: bash
+
 jobs:
   monitor:
     runs-on: ubuntu-24.04
