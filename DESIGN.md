@@ -147,7 +147,13 @@ When a scheduled or manual monitor run on the default branch fails, the workflow
 ### Setup
 
 1. **Give the workflow access to the Claude API** (for the vision check and the repair agent) with Workload Identity Federation. No long-lived key is stored in GitHub: each job exchanges a short-lived GitHub identity token for a Claude API token. See Anthropic's [GitHub Actions guide](https://platform.claude.com/docs/en/manage-claude/wif-providers/github-actions).
-   1. In the Claude Console, open **Settings** → **Workload identity** → **Connect workload** → **GitHub Actions**. Create a federation rule that matches only this repository's default branch: a `subject_prefix` of `repo:<owner>/<repo>:ref:refs/heads/<default branch>`, audience `https://api.anthropic.com`, and `repository_owner` under `claims`. Scheduled runs, manual runs and pushes on the default branch all use that subject.
+   1. In the Claude Console, open **Settings** → **Workload identity** → **Connect workload** → **GitHub Actions**. Create a federation rule that matches only this repository's default branch: audience `https://api.anthropic.com`, `repository_owner` under `claims`, and a `subject_prefix` equal to the subject of the repo's GitHub identity tokens. Scheduled runs, manual runs and pushes on the default branch all use that subject. GitHub's subjects can include the numeric IDs of the owner and repo (`repo:<owner>@<owner id>/<repo>@<repo id>:ref:refs/heads/<branch>`), not just the names shown in Anthropic's guide. Get the exact subject with:
+
+      ```sh
+      gh api repos/<owner>/<repo> --jq '"repo:\(.owner.login)@\(.owner.id)/\(.name)@\(.id):ref:refs/heads/\(.default_branch)"'
+      ```
+
+      If the token exchange fails with reason `match_subject_prefix`, the Console's authentication history (**Settings** → **Workload identity**) shows the subject the token actually had.
    2. In the GitHub repo, open **Settings** → **Secrets and variables** → **Actions**, switch to the **Variables** tab (not Secrets), and add `ANTHROPIC_FEDERATION_RULE_ID`, `ANTHROPIC_ORGANIZATION_ID` and `ANTHROPIC_SERVICE_ACCOUNT_ID`. Add `ANTHROPIC_WORKSPACE_ID` only if the rule covers more than one workspace. They're identifiers, not secrets: without a GitHub identity token from this repo they grant nothing. The workflow reads them as `vars.*`, so they must be variables; saved as secrets, the workflow wouldn't find them.
 
    [.github/anthropic-auth.sh](.github/anthropic-auth.sh) does the token exchange in each job.
