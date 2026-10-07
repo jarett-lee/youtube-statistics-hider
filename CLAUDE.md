@@ -15,6 +15,7 @@ Write each document for its readers, and keep these in mind when deciding what g
 | [README.md](README.md) | People following the AI agent experiment; people who want to use the extension; developers who want to work on the repo; people interested in how the project was built | Short and high level. Technical detail belongs in DESIGN.md, process in WORKFLOW.md |
 | [WORKFLOW.md](WORKFLOW.md) | The maintainer and contributors; planning what to automate next | Organized around people's goals and decisions (goal-directed task analysis), not around the code |
 | [DESIGN.md](DESIGN.md) | Developers working on the code | Complete and accurate: how each part works, how to run it, setup |
+| [TESTING.md](TESTING.md) | The maintainer | One row per workflow path, with its test status and the run that proves it. Add a row when the workflow gains a path |
 | [AI_USAGE.md](AI_USAGE.md) | Anyone | A plain statement of how AI is used |
 | Repair PR descriptions (written by [repair/open-pr.mjs](repair/open-pr.mjs) and the agent) | The maintainer, deciding whether to approve | The evidence needed to approve quickly |
 ## Conventions

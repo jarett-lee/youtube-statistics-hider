@@ -57,6 +57,7 @@ npm run monitor
 
 - [DESIGN.md](DESIGN.md): how each part works, running the monitor and the repair agent, GitHub setup, and how the project will be evaluated.
 - [WORKFLOW.md](WORKFLOW.md): the process, who decides what, and known gaps.
+- [TESTING.md](TESTING.md): which workflow paths have been tested end to end.
 
 | Folder | Contents |
 |---|---|
