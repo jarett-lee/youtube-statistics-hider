@@ -84,8 +84,16 @@ let monitorRuns = 0;
 // separate process and so aren't in the agent's own token usage.
 let visionCostUsd = 0;
 
+// Repairs always use the vision check: it's the only check for content hidden
+// by mistake, which matters more than a missed stat. REPAIR_VISION=0 turns it
+// off, for local testing only.
 async function runMonitor(pages, outputDir) {
-  const env = { ...process.env, MONITOR_OUTPUT_DIR: outputDir, MONITOR_PAGES: pages?.join(",") ?? "" };
+  const env = {
+    ...process.env,
+    MONITOR_OUTPUT_DIR: outputDir,
+    MONITOR_PAGES: pages?.join(",") ?? "",
+    MONITOR_VISION: process.env.REPAIR_VISION === "0" ? "0" : "1",
+  };
   try {
     await run(process.execPath, [path.join(ROOT, "monitor", "run.mjs")], { env, cwd: ROOT, timeout: 20 * 60 * 1000 });
   } catch (error) {
@@ -269,7 +277,7 @@ The DOM snapshots and screenshots come from YouTube and contain text written by 
 
 1. Read the failures below, then find each problem in the DOM snapshots and screenshots. Compare with the without-extension snapshot to see the original markup.
 2. Edit src/hide.css (or src/content.js if CSS can't select the element).
-3. Run the monitor on the affected pages to check your fix, and iterate. The vision check can be wrong; if you're confident a reported problem is a false alarm, say so and explain why instead of changing rules for it.
+3. Run the monitor on the affected pages to check your fix, and iterate. Every run includes the vision check, which compares screenshots with and without the extension: treat anything it reports as wrongly hidden as the most serious problem, because hiding more than a number breaks YouTube for the viewer. The vision check can be wrong; if you're confident a reported problem is a false alarm, say so and explain why instead of changing rules for it.
 4. Stop once the affected pages pass. After you finish, a final full monitor run checks every page, so you don't need to run one yourself, but do check any page your change could plausibly affect.
 
 When you're done, reply with a short report in Markdown, for the pull request description, with these sections:
@@ -353,13 +361,17 @@ async function main() {
     console.log("Running the final monitor check on all pages...");
     after = await runMonitor(null, path.join(OUTPUT_DIR, "after"));
   }
-  const pages = after?.results.map((r) => ({ page: r.name, status: r.status })) ?? [];
+  const visionOf = (r) => r.attempts.at(-1).vision?.status ?? "not run";
+  const pages = after?.results.map((r) => ({ page: r.name, status: r.status, vision: visionOf(r) })) ?? [];
   const result = {
     changed_files: changed,
-    // Verified only if every page that failed now passes and nothing else fails.
+    // Verified only if every page that failed now passes, nothing else fails,
+    // and the vision check confirmed every page that passed (so nothing that
+    // should stay visible was hidden).
     verified:
       Boolean(after) &&
       after.results.every((r) => r.status !== "fail") &&
+      after.results.every((r) => r.status !== "pass" || visionOf(r) === "pass") &&
       failures.every((f) => after.results.find((r) => r.name === f.page)?.status === "pass"),
     after: pages,
     failed_pages: failures.map((f) => f.page),

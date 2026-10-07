@@ -113,7 +113,7 @@ What counts as a stat to hide, and what must stay visible, is defined in [monito
 |---|---|
 | **Actor** | AI agent (Claude), boxed in by automation |
 | **Does** | Reads the failed run's DOM snapshots and screenshots, edits `src/hide.css` or `src/content.js`, and re-runs the monitor on the affected pages until they pass or it hits a limit: 20 turns, 4 monitor runs or about $3 (see [Control spend](#control-spend)) |
-| **Then** | A final monitor run on every page, done by the workflow rather than trusted from the agent, decides whether the fix is verified. It uses the vision check only if the failed run did (see [Gaps](#gaps-found-by-this-analysis)) |
+| **Then** | A final monitor run on every page, done by the workflow rather than trusted from the agent, decides whether the fix is verified. Repairs always use the vision check, and a fix is verified only if it passes on every page, so nothing that should stay visible was hidden |
 | **Constraints** | The agent works only through its own tools: it can't run commands, reach the network, use git or see any credentials, and can edit only those two files. YouTube pages contain text written by strangers, so the agent is told to treat it as data, and a person reviews everything it writes |
 
 ### 5. A pull request is opened
@@ -160,7 +160,7 @@ Each of these is a moment where a person has to understand something and decide.
 | Question | Where to look |
 |---|---|
 | Did the stats get hidden? | The final monitor results table (DOM text scan and vision check); before-and-after screenshots |
-| Is anything hidden that shouldn't be? | The vision check's wrongly-hidden findings in the final run. If the final run had no vision check, this question has no automated answer yet (see [Gaps](#gaps-found-by-this-analysis)) |
+| Is anything hidden that shouldn't be? | The vision check column in the final monitor results: a verified PR passed it on every page |
 | Will it hold up on other layouts? | The selectors: custom element tags (`yt-*`, `ytd-*`), IDs and aria-label patterns survive redesigns better than chains of generated class names. Existing rules should be kept, not replaced, because other viewers may still see the old layout |
 | Is `src/content.js` changed? | Read every line. This is a security question, not a visual one: the code runs on every YouTube page in viewers' browsers, and the agent wrote it after reading text from strangers |
 | Was the fix worth it? | The cost line, and whether the agent called any finding a false alarm |
@@ -195,12 +195,11 @@ Each of these is a moment where a person has to understand something and decide.
 Ordered by priority:
 
 1. **The metrics aren't collected yet:** recall, false positives, repair success rate and cost per repair. For an exploratory project these are the main result. The raw data exists in run artifacts and PRs (each page's findings, each repair's cost and verification), but nothing gathers it, and artifacts expire after 30 days.
-2. **A repair can open a PR with no automated false-positive check.** The final check uses the vision check only if the failed run did, so a repair started by a daily DOM-scan run reaches the maintainer without anything having judged whether it hides the wrong thing. That leaves the most important question (principle 2) to the maintainer. Always running the vision check in the final check would close this, for roughly $0.30 per repair.
-3. **Merged fixes don't reach viewers automatically.** Everything up to the merge is automated, but the step the viewer cares about is manual. Fetching rules remotely (planned) closes this.
-4. **A blocked monitor is silent.** Days of inconclusive runs look the same as days of passing runs. A warning after several inconclusive runs in a row would fix this.
-5. **Mistakes only the vision check catches can wait a week.** Mainly wrongly hidden content. Running the vision check when the page layout changes (planned, with the layout fingerprint) would catch these sooner without daily cost.
-6. **The vision check sees only part of each page:** two viewport screenshots per page. Something hidden further down isn't judged by anything.
-7. **One open repair PR blocks unrelated repairs.** Tolerable while breakages are rare. If they become frequent, the check could compare the failing pages against the pages the open PR covers.
+2. **Merged fixes don't reach viewers automatically.** Everything up to the merge is automated, but the step the viewer cares about is manual. Fetching rules remotely (planned) closes this.
+3. **A blocked monitor is silent.** Days of inconclusive runs look the same as days of passing runs. A warning after several inconclusive runs in a row would fix this.
+4. **Mistakes only the vision check catches can wait a week.** Mainly wrongly hidden content. Running the vision check when the page layout changes (planned, with the layout fingerprint) would catch these sooner without daily cost.
+5. **The vision check sees only part of each page:** two viewport screenshots per page. Something hidden further down isn't judged by anything.
+6. **One open repair PR blocks unrelated repairs.** Tolerable while breakages are rare. If they become frequent, the check could compare the failing pages against the pages the open PR covers.
 
 ## Planned parts of the workflow
 

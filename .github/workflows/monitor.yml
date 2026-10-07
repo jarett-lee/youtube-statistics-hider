@@ -55,7 +55,6 @@ jobs:
     outputs:
       failed_pages: ${{ steps.report.outputs.failed_pages }}
       repair_pr_open: ${{ steps.open_pr.outputs.open }}
-      vision: ${{ steps.vision.outputs.enabled }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -158,12 +157,10 @@ jobs:
           SERVICE_ACCOUNT_ID: ${{ vars.ANTHROPIC_SERVICE_ACCOUNT_ID }}
           WORKSPACE_ID: ${{ vars.ANTHROPIC_WORKSPACE_ID }}
 
+      # The agent's monitor runs and its final check always use the vision
+      # check, to catch content hidden by mistake (see repair/agent.mjs).
       - name: Run repair agent
         run: node repair/agent.mjs monitor-output-before
-        env:
-          # The agent's own monitor runs use the vision check only if the
-          # failed run did, so a DOM-scan failure doesn't pay for vision calls.
-          MONITOR_VISION: ${{ needs.monitor.outputs.vision }}
 
       - name: Open pull request
         run: node repair/open-pr.mjs monitor-output-before
