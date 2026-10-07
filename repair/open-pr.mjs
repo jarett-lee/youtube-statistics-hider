@@ -88,7 +88,7 @@ function prBody(result, agentReport, shots) {
   // A verified fix is the normal case and needs no comment; only flag the exception.
   if (!result.verified) {
     lines.push(
-      `⚠️ **Not verified:** the final monitor run didn't pass with the vision check on every page${result.stopped ? `, and the agent stopped early (${result.stopped})` : ""}. This is a draft to finish by hand.`,
+      `⚠️ **Not verified:** this fix didn't pass every final check (see the results below).${result.stopped ? ` The agent stopped early: ${result.stopped}.` : ""} Finish this draft by hand.`,
       "",
     );
   }
