@@ -40,4 +40,7 @@ There's no build step: load `src/` unpacked in `chrome://extensions` to try the 
 
 ## Private notes
 
-If `notes/` exists, read every file in it at the start of a session. That folder is git-ignored and holds the maintainer's private notes.
+Two git-ignored folders hold private notes:
+
+- `claude/` holds the maintainer's notes for AI agents. If it exists, read every file in it at the start of a session.
+- `notes/` holds the maintainer's own notes, for a person to read. Don't read it at the start of a session; add to it only when asked.
