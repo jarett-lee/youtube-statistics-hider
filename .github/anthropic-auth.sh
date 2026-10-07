@@ -21,7 +21,7 @@ token_file="$RUNNER_TEMP/anthropic-identity-token"
 fetch_token() {
   curl -sSf -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
     "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://api.anthropic.com" \
-    | jq -r .value > "$token_file.tmp"
+    | node -e 'process.stdout.write(JSON.parse(require("fs").readFileSync(0, "utf8")).value)' > "$token_file.tmp"
   mv "$token_file.tmp" "$token_file"
 }
 fetch_token

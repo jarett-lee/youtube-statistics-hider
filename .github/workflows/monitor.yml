@@ -34,9 +34,13 @@ concurrency:
 
 jobs:
   monitor:
-    # Pinned so the Ubuntu 26 migration of ubuntu-latest (from Oct 19, 2026)
-    # happens deliberately, once Playwright supports it.
     runs-on: ubuntu-24.04
+    # Chromium and its system libraries come preinstalled in Playwright's
+    # image, so jobs don't spend minutes installing them. The tag must match
+    # the playwright version in package.json.
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --user 1001
     timeout-minutes: 30
     permissions:
       contents: read
@@ -51,15 +55,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-
       - run: npm ci
-
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
 
       # The vision check runs only when asked for: by vision-weekly.yml, or on
       # a manual run with the box ticked. Other runs use the DOM text scan alone.
@@ -99,16 +95,9 @@ jobs:
       - name: Check for an open repair PR
         id: open_pr
         if: always() && steps.report.outputs.failed_pages != ''
+        run: node repair/check-open-pr.mjs
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          count=$(gh pr list --repo "$GITHUB_REPOSITORY" --label auto-repair --state open --json number --jq length)
-          if [ "$count" = "0" ]; then
-            echo "open=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "open=true" >> "$GITHUB_OUTPUT"
-            echo "A repair PR is already open, so no repair was started." >> "$GITHUB_STEP_SUMMARY"
-          fi
 
       - name: Upload screenshots and DOM snapshots
         if: always()
@@ -128,6 +117,12 @@ jobs:
       needs.monitor.outputs.repair_pr_open == 'false' &&
       github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
     runs-on: ubuntu-24.04
+    # Chromium and its system libraries come preinstalled in Playwright's
+    # image, so jobs don't spend minutes installing them. The tag must match
+    # the playwright version in package.json.
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --user 1001
     timeout-minutes: 120
     permissions:
       contents: write
@@ -141,15 +136,7 @@ jobs:
           # open-pr.mjs gets the token through GH_TOKEN instead.
           persist-credentials: false
 
-      - uses: actions/setup-node@v7
-        with:
-          node-version: 24
-          cache: npm
-
       - run: npm ci
-
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
 
       - name: Download the failed run's output
         uses: actions/download-artifact@v8

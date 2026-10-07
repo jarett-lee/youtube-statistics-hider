@@ -1,5 +1,5 @@
 // Opens a pull request with the repair agent's changes. Runs in GitHub Actions
-// after repair/agent.mjs; it uses git and the gh CLI and no model calls.
+// after repair/agent.mjs; it uses git and the GitHub API and no model calls.
 //
 //   node repair/open-pr.mjs <failed monitor-output dir>
 //
@@ -14,6 +14,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { REPAIR_LABEL, github } from "./github.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUTPUT_DIR = path.resolve(process.env.REPAIR_OUTPUT_DIR || path.join(ROOT, "repair-output"));
@@ -22,7 +23,6 @@ const { GITHUB_REPOSITORY: REPO, GITHUB_RUN_ID: RUN_ID, BASE_BRANCH } = process.
 const SERVER = process.env.GITHUB_SERVER_URL || "https://github.com";
 const EDITABLE = ["src/hide.css", "src/content.js"];
 const SCREENSHOT_BRANCH = "repair-screenshots";
-const LABEL = "auto-repair";
 
 const sh = (cmd, args, opts = {}) => execFileSync(cmd, args, { cwd: ROOT, encoding: "utf8", ...opts }).trim();
 const git = (...args) => sh("git", args);
@@ -119,7 +119,7 @@ function prBody(result, agentReport, shots) {
   return lines.join("\n");
 }
 
-function main() {
+async function main() {
   const result = JSON.parse(fs.readFileSync(path.join(OUTPUT_DIR, "result.json"), "utf8"));
   const agentReport = fs.readFileSync(path.join(OUTPUT_DIR, "summary.md"), "utf8");
 
@@ -152,18 +152,17 @@ function main() {
 
   const bodyFile = path.join(OUTPUT_DIR, "pr-body.md");
   fs.writeFileSync(bodyFile, prBody(result, agentReport, shots));
-  sh("gh", ["label", "create", LABEL, "--color", "D93F0B", "--description", "Opened by the repair agent", "--force"]);
-  const title = `${result.verified ? "" : "[Unverified] "}Repair hiding rules for ${result.failed_pages.join(", ")}`;
-  const url = sh("gh", [
-    "pr", "create",
-    "--base", BASE_BRANCH,
-    "--head", branch,
-    "--title", title,
-    "--body-file", bodyFile,
-    "--label", LABEL,
-    ...(result.verified ? [] : ["--draft"]),
-  ]);
-  summary(`## Repair agent\n\nOpened ${result.verified ? "" : "draft "}PR: ${url}`);
+  // 422 means the label already exists.
+  await github("POST", "/labels", { name: REPAIR_LABEL, color: "D93F0B", description: "Opened by the repair agent" }, { allow: [422] });
+  const pr = await github("POST", "/pulls", {
+    title: `${result.verified ? "" : "[Unverified] "}Repair hiding rules for ${result.failed_pages.join(", ")}`,
+    head: branch,
+    base: BASE_BRANCH,
+    body: fs.readFileSync(bodyFile, "utf8"),
+    draft: !result.verified,
+  });
+  await github("POST", `/issues/${pr.number}/labels`, { labels: [REPAIR_LABEL] });
+  summary(`## Repair agent\n\nOpened ${result.verified ? "" : "draft "}PR: ${pr.html_url}`);
 }
 
-main();
+await main();

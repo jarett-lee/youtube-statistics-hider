@@ -1,0 +1,38 @@
+// Minimal GitHub REST API helper for the workflow, so jobs don't need the gh
+// CLI (it isn't in the Playwright container image).
+//
+// Environment: GH_TOKEN, GITHUB_REPOSITORY, and GITHUB_API_URL (set by
+// GitHub Actions; defaults to https://api.github.com).
+
+const API = process.env.GITHUB_API_URL || "https://api.github.com";
+const REPO = process.env.GITHUB_REPOSITORY;
+
+export const REPAIR_LABEL = "auto-repair";
+
+/**
+ * Calls the GitHub API for this repository. `path` is relative to
+ * /repos/{owner}/{repo}. Returns the parsed response, or throws with the
+ * status and message. Statuses in `allow` return null instead of throwing.
+ */
+export async function github(method, path, body, { allow = [] } = {}) {
+  const response = await fetch(`${API}/repos/${REPO}${path}`, {
+    method,
+    headers: {
+      Accept: "application/vnd.github+json",
+      "X-GitHub-Api-Version": "2022-11-28",
+      ...(process.env.GH_TOKEN && { Authorization: `Bearer ${process.env.GH_TOKEN}` }),
+      ...(body && { "Content-Type": "application/json" }),
+    },
+    body: body && JSON.stringify(body),
+  });
+  if (allow.includes(response.status)) return null;
+  const text = await response.text();
+  if (!response.ok) throw new Error(`GitHub API ${method} ${path}: ${response.status} ${text}`);
+  return text ? JSON.parse(text) : null;
+}
+
+/** Open pull requests labeled auto-repair. Needs the pull-requests: read permission. */
+export async function openRepairPrs() {
+  const prs = await github("GET", "/pulls?state=open&per_page=100");
+  return prs.filter((pr) => pr.labels.some((label) => label.name === REPAIR_LABEL));
+}

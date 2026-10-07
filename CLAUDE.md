@@ -24,6 +24,7 @@ Write each document for its readers, and keep these in mind when deciding what g
 - What the extension must hide, and what must stay visible, is defined in [monitor/scope.mjs](monitor/scope.mjs). Keep it in sync with the rules in `src/` and the patterns in [monitor/checks.mjs](monitor/checks.mjs).
 - The Claude API is reached only through Workload Identity Federation in CI and `ant auth login` locally. Don't add API keys.
 - The repair agent may edit only `src/hide.css` and `src/content.js`.
+- The workflow jobs run in the `mcr.microsoft.com/playwright` image. Its tag in `monitor.yml` must match the `playwright` version in `package.json`; update both together.
 
 ## Commands
 

@@ -81,6 +81,8 @@ The monitor runs in GitHub Actions:
 
 Because most runs skip the vision check, problems only it can catch, such as content hidden by mistake, can take up to a week to show up.
 
+The jobs run inside Playwright's Docker image (`mcr.microsoft.com/playwright`), which comes with Chromium and Node.js installed, so no time is spent installing them. The image's tag must match the `playwright` version in `package.json`.
+
 To run it locally (requires Node.js 22 or later; CI uses 24):
 
 ```sh
