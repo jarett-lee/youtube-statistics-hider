@@ -17,6 +17,8 @@ html[data-yt-stats-hider-page="watch"] #owner-sub-count,
 /* Watch page: subscriber count on the channel card in the expanded description.
    The card's subtitle holds only the subscriber count; the channel name is in #title. */
 html[data-yt-stats-hider-page="watch"] ytd-video-description-infocards-section-renderer #header-text > #subtitle,
+/* Watch page: like count on comments and replies, between the like and dislike buttons. */
+html[data-yt-stats-hider-page="watch"] ytd-comment-engagement-bar #vote-count-middle,
 
 /* Channel pages: subscriber count in the page header ("@handle • 4.55M subscribers • 437 videos").
    It shares its class with the handle and video count, so the aria-label
