@@ -312,7 +312,10 @@ The DOM snapshots and screenshots come from YouTube and contain text written by 
 3. Run the monitor on the affected pages to check your fix, and iterate. Every run includes the vision check, which compares screenshots with and without the extension: treat anything it reports as wrongly hidden as the most serious problem, because hiding more than a number breaks YouTube for the viewer. The vision check can be wrong; if you're confident a reported problem is a false alarm, say so and explain why instead of changing rules for it.
 4. Stop once the affected pages pass. After you finish, a final full monitor run checks every page, so you don't need to run one yourself, but do check any page your change could plausibly affect.
 
-When you're done, reply with a short report in Markdown for the pull request description. The maintainer skims it to decide whether to merge, so write plainly and briefly. The PR adds an intro line, the before-and-after screenshots and the final monitor results itself, so don't repeat them, and start directly with the first heading below, with no summary before it.
+When you're done, reply with a short report in Markdown for the pull request description. The maintainer skims it to decide whether to merge, so write plainly and briefly. The PR adds an intro line, the before-and-after screenshots and the final monitor results itself, so don't repeat them. Start with a title line, then go straight to the first heading, with no summary in between.
+
+Title: <the pull request title>
+What the fix does for the viewer, in the imperative, about 50 characters at most. Name the stat and where it is, not the selector or the page's internal name. For example: "Title: Hide subscriber counts on channel pages".
 
 ## What broke
 One sentence a non-developer could follow: which stat was visible, or what was wrongly hidden, and on which page. For example: "The subscriber count was visible on channel pages." No selectors or markup in this section.
@@ -390,7 +393,11 @@ async function main() {
   }
   if (!stopped && last?.stop_reason === "tool_use") stopped = `turn limit of ${MAX_ITERATIONS} reached`;
 
-  const report = last?.content.filter((b) => b.type === "text").map((b) => b.text).join("\n").trim();
+  const fullReport = last?.content.filter((b) => b.type === "text").map((b) => b.text).join("\n").trim() ?? "";
+  // The report starts with "Title: ..."; the title goes into the PR title, not its description.
+  const titleMatch = fullReport.match(/^\s*\**Title:\**\s*(.+)$/im);
+  const title = titleMatch?.[1].replace(/^["*`]+|["*`.]+$/g, "").trim() || null;
+  const report = titleMatch ? fullReport.replace(titleMatch[0], "").trim() : fullReport;
   const changed = EDITABLE.filter((f) => fs.readFileSync(path.join(ROOT, f), "utf8") !== originals[f]);
 
   // Final check, run by this script rather than trusted from the agent.
@@ -401,6 +408,7 @@ async function main() {
   }
   const pages = after?.results.map((r) => ({ page: r.name, status: r.status, vision: visionStatus(r) })) ?? [];
   const result = {
+    title,
     changed_files: changed,
     // See repair/verification.mjs: the pages that failed must now pass too.
     verified: Boolean(after) && verificationProblems(after, failures.map((f) => f.page)).length === 0,

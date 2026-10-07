@@ -159,7 +159,9 @@ async function main() {
   const branch = `auto-repair/${RUN_ID}`;
   git("checkout", "-b", branch);
   git("add", ...EDITABLE);
-  git("commit", "--quiet", "-m", `Repair hiding rules for ${result.failed_pages.join(", ")}\n\nProposed by the repair agent in run ${RUN_ID}.`);
+  // The agent's title says what the fix does; older results don't have one.
+  const fixTitle = result.title || `Repair hiding rules for ${result.failed_pages.join(", ")}`;
+  git("commit", "--quiet", "-m", `${fixTitle}\n\nProposed by the repair agent in run ${RUN_ID}.`);
   git("push", "--quiet", "origin", branch);
 
   const bodyFile = path.join(OUTPUT_DIR, "pr-body.md");
@@ -167,7 +169,7 @@ async function main() {
   // 422 means the label already exists.
   await github("POST", "/labels", { name: REPAIR_LABEL, color: "D93F0B", description: "Opened by the repair agent" }, { allow: [422] });
   const pr = await github("POST", "/pulls", {
-    title: `${result.verified ? "" : "[Unverified] "}Repair hiding rules for ${result.failed_pages.join(", ")}`,
+    title: `${result.verified ? "" : "[Unverified] "}${fixTitle}`,
     head: branch,
     base: BASE_BRANCH,
     body: fs.readFileSync(bodyFile, "utf8"),
