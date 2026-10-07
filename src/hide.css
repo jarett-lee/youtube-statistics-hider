@@ -15,6 +15,12 @@ html[data-yt-stats-hider-page="watch"] yt-list-item-view-model:has(yt-list-item-
 /* Watch page: channel subscriber count under the channel name. */
 html[data-yt-stats-hider-page="watch"] #owner-sub-count,
 
+/* Channel pages: subscriber count in the page header ("@handle • 4.55M subscribers • 437 videos").
+   It shares its class with the handle and video count, so the aria-label
+   ("4.55 million subscribers") identifies it; English only. Also hides the delimiter after it. */
+yt-page-header-view-model .ytContentMetadataViewModelMetadataText:is([aria-label$=" subscribers" i], [aria-label$=" subscriber" i]),
+yt-page-header-view-model .ytContentMetadataViewModelMetadataText:is([aria-label$=" subscribers" i], [aria-label$=" subscriber" i]) + .ytContentMetadataViewModelDelimiter,
+
 /* All pages: elements content.js matched by their text, such as "1,234 views" with no
    class of its own. Each text rule in content.js is already limited to where it applies. */
 [data-yt-stats-hider-hidden],
