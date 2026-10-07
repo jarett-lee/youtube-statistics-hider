@@ -20,16 +20,15 @@ The workflow paths (see [WORKFLOW.md](WORKFLOW.md)) and whether each has been te
 |---|---|---|---|---|
 | 6 | Push > DOM text scan > page fails > no repair PR open > repair job > verified > pull request | ⚠️ | [run 37671786939](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/37671786939), [PR #4](https://github.com/jarett-lee/youtube-statistics-hider/pull/4) | Passed on attempt 4, after fixing the federation setup. Ran before repairs always used the vision check, so test again |
 | 7 | Manual > DOM text scan > page fails > repair PR already open > repair job doesn't start | ✅ 2026-10-07 | [run 37677463808](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/37677463808) | The check found PR #4 |
-| 8 | Page fails on a branch other than `main` > repair job doesn't start | ⬜ | | Push a failing change to another branch |
-| 9 | Repair > fix not verified > draft pull request marked `[Unverified]` | ⬜ | | |
-| 10 | Repair > agent makes no changes > no pull request | ⬜ | | |
-| 11 | Repair > agent hits a limit (turns, monitor runs or $3) > stops, draft pull request | ⬜ | | Lower `REPAIR_MAX_COST_USD` to trigger it |
-| 12 | Repair > Claude API authentication fails > repair agent step fails, no pull request | ✅ 2026-10-07 | [run 37671786939](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/37671786939), attempts 1–3 | Tested by accident: subject format, then workspace membership |
+| 8 | Repair > fix not verified > draft pull request marked `[Unverified]` | ⬜ | | |
+| 9 | Repair > agent makes no changes > no pull request | ⬜ | | |
+| 10 | Repair > agent hits a limit (turns, monitor runs or $3) > stops, draft pull request | ⬜ | | Lower `REPAIR_MAX_COST_USD` to trigger it |
+| 11 | Repair > Claude API authentication fails > repair agent step fails, no pull request | ✅ 2026-10-07 | [run 37671786939](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/37671786939), attempts 1–3 | Tested by accident: subject format, then workspace membership |
 
 ## After a repair pull request
 
 | # | Flow | Status | Evidence | Notes |
 |---|---|---|---|---|
-| 13 | Merge the repair PR > next run passes | ⬜ | | Merging PR #4 tests this |
-| 14 | Close the repair PR > next failure starts a new repair | ⬜ | | |
-| 15 | Update the repair PR > review again > merge | ⬜ | | |
+| 12 | Merge the repair PR > next run passes | ⬜ | | Merging PR #4 tests this |
+| 13 | Close the repair PR > next failure starts a new repair | ⬜ | | |
+| 14 | Update the repair PR > review again > merge | ⬜ | | |
