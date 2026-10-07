@@ -174,13 +174,19 @@ Results go to `repair-output/`: `result.json` (whether the fix was verified, cos
 
 ### Metrics
 
-| Metric | Meaning |
-|---|---|
-| **Recall** | Share of engagement stats that are actually hidden |
-| **False positives** | Elements hidden that should have stayed visible |
-| **Repair success rate** | Share of breakages the agent fixes correctly, with **cost per repair** |
+These are the main result of the experiment. The current numbers are in [METRICS.md](https://github.com/jarett-lee/youtube-statistics-hider/blob/metrics/METRICS.md) on the `metrics` branch.
 
-These are the main result of the experiment. They aren't collected yet: the raw data is in run artifacts and repair PRs, but nothing gathers it. See [WORKFLOW.md](WORKFLOW.md#gaps-found-by-this-analysis).
+| Metric | How it's measured |
+|---|---|
+| **Health** (recall) | The share of monitor runs on `main` where no page failed: how often the extension is broken. Runs where every page was inconclusive (YouTube blocked the runner) don't count either way |
+| **False positives** | The vision check's wrongly-hidden findings, on runs that use the vision check |
+| **Repair success rate** | Of repair PRs: verified on the first try, verified after re-checking with Verify repair PR, and merged. Repairs that failed to start, such as on a Claude API setup error, are counted separately |
+| **Cost per repair** | Each repair's estimated cost: the agent plus the vision checks in its monitor runs |
+| **Cost per vision test** | The estimated vision check cost of each monitor run that used it and each Verify repair PR run |
+
+Costs are estimates from list prices; the Claude Console's usage page for the workspace has the actual spend. Health only covers the monitor's pages, loaded in English and signed out.
+
+**How it's collected:** each workflow run builds one JSON line ([metrics/line.mjs](metrics/line.mjs)) and passes it to a small `log` job, the only job with write access to the `metrics` branch. That job appends it to `metrics.jsonl` ([metrics/append.mjs](metrics/append.mjs)) and regenerates METRICS.md from the whole log ([metrics/report.mjs](metrics/report.mjs)). The branch has its own history and is never merged, so the log doesn't add commits to `main`.
 
 ### Regression archive (planned)
 

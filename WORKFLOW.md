@@ -190,18 +190,17 @@ Each of these is a moment where a person has to understand something and decide.
 
 - **Goal:** keep API costs predictable.
 - **Today:** each run's summary shows the vision check's estimated cost, and each repair PR shows the agent's. Weekly vision runs cost roughly $0.25 to $0.40 (an estimate, not yet measured). Repairs are capped at about $3 each, counting the agent and the vision checks in its monitor runs, and only one runs at a time. A hard breakage that needs more than that ends as an unverified draft for the maintainer to update.
-- **Gap:** there's no running total across runs.
+- **Totals:** [METRICS.md](https://github.com/jarett-lee/youtube-statistics-hider/blob/metrics/METRICS.md) has the average and total cost of repairs and vision tests.
 
 ## Gaps found by this analysis
 
 Ordered by priority:
 
-1. **The metrics aren't collected yet:** recall, false positives, repair success rate and cost per repair. For an exploratory project these are the main result. The raw data exists in run artifacts and PRs (each page's findings, each repair's cost and verification), but nothing gathers it, and artifacts expire after 30 days.
-2. **Merged fixes don't reach viewers automatically.** Everything up to the merge is automated, but the step the viewer cares about is manual. Fetching rules remotely (planned) closes this.
-3. **A blocked monitor is silent.** Days of inconclusive runs look the same as days of passing runs. A warning after several inconclusive runs in a row would fix this.
-4. **Mistakes only the vision check catches can wait a week.** Mainly wrongly hidden content. Running the vision check when the page layout changes (planned, with the layout fingerprint) would catch these sooner without daily cost.
-5. **The vision check sees only part of each page:** two viewport screenshots per page. Something hidden further down isn't judged by anything.
-6. **One open repair PR blocks unrelated repairs.** Tolerable while breakages are rare. If they become frequent, the check could compare the failing pages against the pages the open PR covers.
+1. **Merged fixes don't reach viewers automatically.** Everything up to the merge is automated, but the step the viewer cares about is manual. Fetching rules remotely (planned) closes this.
+2. **A blocked monitor is silent.** Days of inconclusive runs look the same as days of passing runs. A warning after several inconclusive runs in a row would fix this.
+3. **Mistakes only the vision check catches can wait a week.** Mainly wrongly hidden content. Running the vision check when the page layout changes (planned, with the layout fingerprint) would catch these sooner without daily cost.
+4. **The vision check sees only part of each page:** two or three viewport screenshots per page. Something hidden further down isn't judged by anything.
+5. **One open repair PR blocks unrelated repairs.** Tolerable while breakages are rare. If they become frequent, the check could compare the failing pages against the pages the open PR covers.
 
 ## Planned parts of the workflow
 

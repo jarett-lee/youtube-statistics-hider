@@ -14,7 +14,7 @@ The question it explores: can AI agents keep a fragile browser extension working
 - **A repair agent** (Claude) diagnoses a breakage, edits the hiding rules, tests its fix and opens a pull request.
 - **The maintainer** approves each fix, or refines it with an AI coding agent first.
 
-**How it's going:** the extension, the checks and the repair agent are built. Next is measuring how well the agents do: how many stats get hidden, how often the wrong thing is hidden, how often repairs work and what they cost. Those numbers aren't collected yet.
+**How it's going:** the extension, the checks and the repair agent are built and running. [METRICS.md](https://github.com/jarett-lee/youtube-statistics-hider/blob/metrics/METRICS.md) tracks how often the extension is broken, how often the wrong thing is hidden, how often repairs work and what they cost, updated after every run.
 
 ## Using the extension
 
@@ -64,6 +64,7 @@ npm run monitor
 | [src/](src/) | The Chrome extension (Manifest V3) |
 | [monitor/](monitor/) | Playwright checks: DOM text scan and vision check |
 | [repair/](repair/) | The repair agent and the script that opens its pull requests |
+| [metrics/](metrics/) | Scripts that log each run and build [METRICS.md](https://github.com/jarett-lee/youtube-statistics-hider/blob/metrics/METRICS.md) |
 | [.github/workflows/](.github/workflows/) | The GitHub Actions workflows |
 
 Built with Chrome Manifest V3, Playwright, GitHub Actions, and the Claude API (a vision check and a tool-using repair agent), authenticated with Workload Identity Federation.
