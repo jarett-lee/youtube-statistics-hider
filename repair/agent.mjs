@@ -293,7 +293,8 @@ ${MUST_STAY_VISIBLE}
 - src/hide.css holds CSS hiding rules. It's injected before the page renders, so CSS rules never let a stat flash on screen. Prefer CSS.
 - src/content.js sets html[data-yt-stats-hider-page] to "watch" on /watch pages and "other" elsewhere; watch-page rules are scoped with it. It also has TEXT_MATCHED_STATS: rules that mark elements by their text with data-yt-stats-hider-hidden (hidden by hide.css), for stats that have no class or attribute of their own.
 - YouTube serves several layouts at once (A/B tests), and users see layouts the monitor doesn't. Keep existing rules unless they now hide something they shouldn't: add rules for the new markup next to the old ones.
-- Prefer selectors that are likely to survive redesigns: custom element tag names (yt-*, ytd-*), IDs, and aria-label patterns over long chains of generated class names. Hide the smallest element that contains the stat, so labels, icons and dates around it stay visible.
+- Prefer selectors that are likely to survive redesigns: custom element tag names (yt-*, ytd-*) and IDs over long chains of generated class names. Hide the smallest element that contains the stat, so labels, icons and dates around it stay visible.
+- Only English is supported for now, but rules shouldn't depend on text where YouTube's markup allows it. Aria-labels spell out what a number is ("19 thousand views"), so use them to find the stat in the DOM snapshot, then select it by element, ID or structure instead. Match an aria-label or text only when nothing else identifies the element, as an English fallback, and say so in your notes for the reviewer.
 
 ## Evidence
 

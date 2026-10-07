@@ -163,7 +163,7 @@ Each of these is a moment where a person has to understand something and decide.
 |---|---|
 | Did the stats get hidden? | The final monitor results table (DOM text scan and vision check); before-and-after screenshots |
 | Is anything hidden that shouldn't be? | The vision check column in the final monitor results: a verified PR passed it on every page |
-| Will it hold up on other layouts? | The selectors: custom element tags (`yt-*`, `ytd-*`), IDs and aria-label patterns survive redesigns better than chains of generated class names. Existing rules should be kept, not replaced, because other viewers may still see the old layout |
+| Will it hold up on other layouts? | The selectors: custom element tags (`yt-*`, `ytd-*`) and IDs survive redesigns better than chains of generated class names, and don't depend on English the way aria-label and text matches do. Existing rules should be kept, not replaced, because other viewers may still see the old layout |
 | Is `src/content.js` changed? | Read every line. This is a security question, not a visual one: the code runs on every YouTube page in viewers' browsers, and the agent wrote it after reading text from strangers |
 | Was the fix worth it? | The cost line, and whether the agent called any finding a false alarm |
 

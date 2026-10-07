@@ -20,7 +20,7 @@ The question it explores: can AI agents keep a fragile browser extension working
 
 The extension will be published to the Chrome Web Store in the future. It isn't available there yet.
 
-It currently hides:
+It only works when YouTube is in English for now. It currently hides:
 
 - view counts, on every page
 - the like count on the video page
