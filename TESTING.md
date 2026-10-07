@@ -20,7 +20,7 @@ The workflow paths (see [WORKFLOW.md](WORKFLOW.md)) and whether each has been te
 |---|---|---|---|---|
 | 6 | Push > DOM text scan > page fails > no repair PR open > repair job > verified > pull request | ⚠️ | [run 37671786939](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/37671786939), [PR #4](https://github.com/jarett-lee/youtube-statistics-hider/pull/4) | Passed on attempt 4, after fixing the federation setup. Ran before repairs always used the vision check, so test again |
 | 7 | Manual > DOM text scan > page fails > repair PR already open > repair job doesn't start | ✅ 2026-10-07 | [run 37677463808](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/37677463808) | The check found PR #4 |
-| 8 | Repair > fix not verified > draft pull request marked `[Unverified]` | ⬜ | | |
+| 8 | Repair > fix not verified > draft pull request marked `[Unverified]`, with steps to finish it | ⬜ | | |
 | 9 | Repair > agent makes no changes > no pull request | ⬜ | | |
 | 10 | Repair > agent hits a limit (turns, monitor runs or $3) > stops, draft pull request | ⬜ | | Lower `REPAIR_MAX_COST_USD` to trigger it |
 | 11 | Repair > Claude API authentication fails > repair agent step fails, no pull request | ✅ 2026-10-07 | [run 37671786939](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/37671786939), attempts 1–3 | Tested by accident: subject format, then workspace membership |
@@ -32,5 +32,5 @@ The workflow paths (see [WORKFLOW.md](WORKFLOW.md)) and whether each has been te
 | 12 | Merge the repair PR > next run passes | ✅ 2026-10-07 | [run 37684539393](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/37684539393) | The run started by merging PR #4 |
 | 13 | Close the repair PR > next failure starts a new repair | ⬜ | | |
 | 14 | Update the repair PR > Verify repair PR > review again > merge | ⬜ | | |
-| 15 | Draft repair PR > Verify repair PR > every page passes with the vision check > marked ready for review | ✅ 2026-10-07 | [run 37690445569](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/37690445569), [PR #6](https://github.com/jarett-lee/youtube-statistics-hider/pull/6) | Also the first vision check passing on every page in CI |
+| 15 | Draft repair PR > Verify repair PR > every page passes with the vision check > marked ready for review | ✅ 2026-10-07 | [run 37690445569](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/37690445569), [PR #6](https://github.com/jarett-lee/youtube-statistics-hider/pull/6) | Also the first vision check passing on every page in CI. PR #6 predates the finishing steps, so removing them is only tested locally so far |
 | 16 | Verify repair PR > a page still fails > comment lists the problems, PR stays a draft | ⬜ | | |
