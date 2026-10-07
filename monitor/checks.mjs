@@ -70,10 +70,15 @@ export function scanForStats() {
 
   // 1. Text that spells out a view count: "1.2M views", "1 view", "No views".
   const VIEW_TEXT = /\b\d[\d.,]*\s*[KMB]?\s+views?\b|\bno views\b/i;
-  // 2. A subscriber count: the channel owner's count on the watch page, and the
-  //    channel header on channel pages. Other subscriber counts are not checked yet.
+  // 2. A subscriber count: the channel owner's count on the watch page, the
+  //    channel card in the expanded description, and the channel header on
+  //    channel pages. Other subscriber counts are not checked yet.
   const SUBSCRIBER_TEXT = /\b\d[\d.,]*\s*[KMB]?\s+subscribers?\b/i;
-  const SUBSCRIBER_SCOPE = "ytd-watch-metadata ytd-video-owner-renderer, yt-page-header-view-model";
+  const SUBSCRIBER_SCOPE = [
+    "ytd-watch-metadata ytd-video-owner-renderer",
+    "ytd-video-description-infocards-section-renderer",
+    "yt-page-header-view-model",
+  ].join(", ");
   // 3. A bare abbreviated count, such as "19K" in a metadata row or "19M" on the like button.
   const BARE_COUNT = /^\d[\d.,]*\s*[KMB]$/;
   // 4. A like count on a comment or reply, such as "324K" or "12". Comments are
@@ -90,9 +95,14 @@ export function scanForStats() {
       if (COMMENT_LIKE_COUNT.test(text)) report("comment like count", el, text);
       continue;
     }
+    // Checked before skipping user content: the description's channel card is
+    // YouTube's markup, but it sits inside the description expander.
+    if (SUBSCRIBER_TEXT.test(text) && el.closest(SUBSCRIBER_SCOPE)) {
+      report("subscriber text", el, text);
+      continue;
+    }
     if (isUserContent(el)) continue;
     if (VIEW_TEXT.test(text)) report("view text", el, text);
-    else if (SUBSCRIBER_TEXT.test(text) && el.closest(SUBSCRIBER_SCOPE)) report("subscriber text", el, text);
     else if (BARE_COUNT.test(text) && !el.closest(BADGES)) report("bare count", el, text);
   }
 
