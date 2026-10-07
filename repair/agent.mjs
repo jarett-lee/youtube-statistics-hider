@@ -84,10 +84,41 @@ let monitorRuns = 0;
 // separate process and so aren't in the agent's own token usage.
 let visionCostUsd = 0;
 
+// Each GitHub identity token can be exchanged for a Claude API token only once
+// (Anthropic rejects a reused token as `jti_reused`). A monitor run is a
+// separate process that does its own exchange, so write a fresh token to the
+// file before each run, and again afterwards so this process's next refresh
+// doesn't reuse the token the monitor just used. Does nothing outside GitHub
+// Actions or without federation.
+async function refreshIdentityToken() {
+  const {
+    ACTIONS_ID_TOKEN_REQUEST_URL: url,
+    ACTIONS_ID_TOKEN_REQUEST_TOKEN: requestToken,
+    ANTHROPIC_IDENTITY_TOKEN_FILE: file,
+  } = process.env;
+  if (!url || !requestToken || !file) return;
+  const response = await fetch(`${url}&audience=https://api.anthropic.com`, {
+    headers: { Authorization: `Bearer ${requestToken}` },
+  });
+  if (!response.ok) throw new Error(`couldn't get a fresh GitHub identity token: ${response.status}`);
+  const { value } = await response.json();
+  fs.writeFileSync(`${file}.tmp`, value);
+  fs.renameSync(`${file}.tmp`, file);
+}
+
 // Repairs always use the vision check: it's the only check for content hidden
 // by mistake, which matters more than a missed stat. REPAIR_VISION=0 turns it
 // off, for local testing only.
 async function runMonitor(pages, outputDir) {
+  await refreshIdentityToken();
+  try {
+    return await runMonitorProcess(pages, outputDir);
+  } finally {
+    await refreshIdentityToken();
+  }
+}
+
+async function runMonitorProcess(pages, outputDir) {
   const env = {
     ...process.env,
     MONITOR_OUTPUT_DIR: outputDir,
