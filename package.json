@@ -6,6 +6,8 @@
     "monitor": "node monitor/run.mjs"
   },
   "devDependencies": {
-    "playwright": "1.63.0"
+    "@anthropic-ai/sdk": "^0.131.0",
+    "playwright": "1.63.0",
+    "zod": "^4.6.5"
   }
 }
