@@ -39,6 +39,8 @@ jobs:
       contents: read
       pull-requests: write # to comment and mark the PR ready
       id-token: write # for Workload Identity Federation with the Claude API
+    outputs:
+      metrics: ${{ steps.metrics.outputs.line }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -76,6 +78,13 @@ jobs:
           PR: ${{ inputs.pr }}
           GH_TOKEN: ${{ github.token }}
 
+      - name: Build the metrics line
+        id: metrics
+        if: always()
+        run: echo "line=$(node metrics/line.mjs verify monitor-output "$PR")" >> "$GITHUB_OUTPUT"
+        env:
+          PR: ${{ inputs.pr }}
+
       - name: Upload screenshots and DOM snapshots
         if: always()
         uses: actions/upload-artifact@v7
@@ -83,3 +92,25 @@ jobs:
           name: verify-pr-${{ inputs.pr }}-${{ github.run_id }}
           path: monitor-output/
           retention-days: 30
+
+  # Appends this run's lines to the metrics log on the metrics branch. The only
+  # job that can write to it; the jobs that load YouTube pages can't.
+  log:
+    needs: [verify]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write # to push to the metrics branch
+      pull-requests: read # to see which repair PRs were merged
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Append to the metrics log
+        run: node metrics/append.mjs
+        env:
+          METRICS_LINES: |
+            ${{ needs.verify.outputs.metrics }}
+          GH_TOKEN: ${{ github.token }}

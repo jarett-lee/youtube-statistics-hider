@@ -177,6 +177,8 @@ async function main() {
   });
   await github("POST", `/issues/${pr.number}/labels`, { labels: [REPAIR_LABEL] });
   summary(`## Repair agent\n\nOpened ${result.verified ? "" : "draft "}PR: ${pr.html_url}`);
+  // For the metrics log.
+  if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `number=${pr.number}\n`);
 }
 
 await main();

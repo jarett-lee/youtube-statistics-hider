@@ -55,6 +55,7 @@ jobs:
     outputs:
       failed_pages: ${{ steps.report.outputs.failed_pages }}
       repair_pr_open: ${{ steps.open_pr.outputs.open }}
+      metrics: ${{ steps.metrics.outputs.line }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -104,6 +105,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
+      - name: Build the metrics line
+        id: metrics
+        if: always()
+        run: echo "line=$(node metrics/line.mjs monitor monitor-output)" >> "$GITHUB_OUTPUT"
+
       - name: Upload screenshots and DOM snapshots
         if: always()
         uses: actions/upload-artifact@v7
@@ -134,6 +140,8 @@ jobs:
       pull-requests: write
       issues: write # to create the auto-repair label
       id-token: write # for Workload Identity Federation with the Claude API
+    outputs:
+      metrics: ${{ steps.metrics.outputs.line }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -163,10 +171,18 @@ jobs:
         run: node repair/agent.mjs monitor-output-before
 
       - name: Open pull request
+        id: pr
         run: node repair/open-pr.mjs monitor-output-before
         env:
           GH_TOKEN: ${{ github.token }}
           BASE_BRANCH: ${{ github.ref_name }}
+
+      - name: Build the metrics line
+        id: metrics
+        if: always()
+        run: echo "line=$(node metrics/line.mjs repair repair-output "$PR")" >> "$GITHUB_OUTPUT"
+        env:
+          PR: ${{ steps.pr.outputs.number }}
 
       - name: Upload repair output
         if: always()
@@ -175,3 +191,26 @@ jobs:
           name: repair-output-${{ github.run_id }}
           path: repair-output/
           retention-days: 30
+
+  # Appends this run's lines to the metrics log on the metrics branch. The only
+  # job that can write to it; the jobs that load YouTube pages can't.
+  log:
+    needs: [monitor, repair]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write # to push to the metrics branch
+      pull-requests: read # to see which repair PRs were merged
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Append to the metrics log
+        run: node metrics/append.mjs
+        env:
+          METRICS_LINES: |
+            ${{ needs.monitor.outputs.metrics }}
+            ${{ needs.repair.outputs.metrics }}
+          GH_TOKEN: ${{ github.token }}
