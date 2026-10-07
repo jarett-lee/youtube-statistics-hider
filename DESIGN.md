@@ -154,6 +154,8 @@ When a scheduled or manual monitor run on the default branch fails, the workflow
       ```
 
       If the token exchange fails with reason `match_subject_prefix`, the Console's authentication history (**Settings** → **Workload identity**) shows the subject the token actually had.
+
+      The service account must be a member of the rule's workspace. It's automatically a member of the organization's default workspace; for any other workspace, add it as a member, or the exchange fails with reason `sa_not_in_workspace`.
    2. In the GitHub repo, open **Settings** → **Secrets and variables** → **Actions**, switch to the **Variables** tab (not Secrets), and add `ANTHROPIC_FEDERATION_RULE_ID`, `ANTHROPIC_ORGANIZATION_ID` and `ANTHROPIC_SERVICE_ACCOUNT_ID`. Add `ANTHROPIC_WORKSPACE_ID` only if the rule covers more than one workspace. They're identifiers, not secrets: without a GitHub identity token from this repo they grant nothing. The workflow reads them as `vars.*`, so they must be variables; saved as secrets, the workflow wouldn't find them.
 
    [.github/anthropic-auth.sh](.github/anthropic-auth.sh) does the token exchange in each job.
