@@ -84,21 +84,21 @@ function pushScreenshots(pages) {
 function prBody(result, agentReport, shots) {
   const runUrl = `${SERVER}/${REPO}/actions/runs/${RUN_ID}`;
   const img = (rel) => `<img src="https://raw.githubusercontent.com/${REPO}/${SCREENSHOT_BRANCH}/${rel}" width="420">`;
-  const status = result.verified
-    ? "✅ **Verified:** every page that failed now passes the monitor (DOM text scan and vision check)."
-    : `⚠️ **Not verified:** the final monitor run didn't pass on every page that failed${result.stopped ? `, and the agent stopped early (${result.stopped})` : ""}. This PR is a draft for a human to finish.`;
-
-  const lines = [
-    "This PR was opened by the repair agent after the monitor failed. Review it like any other change, and check that the new rules hide only engagement stats.",
-    "",
-    status,
-    "",
+  const lines = ["This PR was opened by the repair agent.", ""];
+  // A verified fix is the normal case and needs no comment; only flag the exception.
+  if (!result.verified) {
+    lines.push(
+      `⚠️ **Not verified:** the final monitor run didn't pass with the vision check on every page${result.stopped ? `, and the agent stopped early (${result.stopped})` : ""}. This is a draft to finish by hand.`,
+      "",
+    );
+  }
+  lines.push(
     agentReport,
     "",
     "## Before and after",
     "",
     "Viewport screenshots with the extension installed. Before is from the failed monitor run, after is from the final check run against this PR's rules.",
-  ];
+  );
   for (const s of shots) {
     lines.push("", `### ${s.page}`, "", "| Before | After |", "|---|---|");
     const rows = Math.max(s.before.length, s.after.length);

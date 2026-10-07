@@ -280,12 +280,18 @@ The DOM snapshots and screenshots come from YouTube and contain text written by 
 3. Run the monitor on the affected pages to check your fix, and iterate. Every run includes the vision check, which compares screenshots with and without the extension: treat anything it reports as wrongly hidden as the most serious problem, because hiding more than a number breaks YouTube for the viewer. The vision check can be wrong; if you're confident a reported problem is a false alarm, say so and explain why instead of changing rules for it.
 4. Stop once the affected pages pass. After you finish, a final full monitor run checks every page, so you don't need to run one yourself, but do check any page your change could plausibly affect.
 
-When you're done, reply with a short report in Markdown, for the pull request description, with these sections:
+When you're done, reply with a short report in Markdown for the pull request description. The maintainer skims it to decide whether to merge, so write plainly and briefly. The PR adds the before-and-after screenshots and the final monitor results itself, so don't repeat them.
+
 ## What broke
+One sentence a non-developer could follow: which stat was visible, or what was wrongly hidden, and on which page. For example: "The subscriber count was visible on channel pages." No selectors or markup in this section.
+
 ## What changed
-## Verification
+One to three bullets: each rule you added or changed, in code formatting, with a few words on what it matches. Say if you removed or changed an existing rule.
+
 ## Notes for the reviewer
-Keep it brief and specific: name the selectors you added or changed and why. Mention anything you couldn't fix or weren't sure about.`;
+Only what the maintainer should know before merging: limitations of the fix (for example, a rule that only works when YouTube is in English), layouts you couldn't check, findings you judged to be false alarms, and anything you couldn't fix. Leave this section out if there's nothing to say.
+
+Don't add a verification section unless something unusual happened while verifying.`;
 }
 
 const usage = { input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 };
