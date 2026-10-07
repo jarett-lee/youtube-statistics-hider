@@ -70,10 +70,10 @@ export function scanForStats() {
 
   // 1. Text that spells out a view count: "1.2M views", "1 view", "No views".
   const VIEW_TEXT = /\b\d[\d.,]*\s*[KMB]?\s+views?\b|\bno views\b/i;
-  // 2. A subscriber count. The extension only hides the channel owner's count on
-  //    the watch page so far, so other subscriber counts are not checked.
+  // 2. A subscriber count: the channel owner's count on the watch page, and the
+  //    channel header on channel pages. Other subscriber counts are not checked yet.
   const SUBSCRIBER_TEXT = /\b\d[\d.,]*\s*[KMB]?\s+subscribers?\b/i;
-  const SUBSCRIBER_SCOPE = "ytd-watch-metadata ytd-video-owner-renderer";
+  const SUBSCRIBER_SCOPE = "ytd-watch-metadata ytd-video-owner-renderer, yt-page-header-view-model";
   // 3. A bare abbreviated count, such as "19K" in a metadata row or "19M" on the like button.
   const BARE_COUNT = /^\d[\d.,]*\s*[KMB]$/;
 
