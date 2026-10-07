@@ -53,7 +53,7 @@ With and without the extension, the agent can compare what the page is supposed 
 
 ### 5. Human approval
 
-The agent never merges its own changes. The maintainer approves each PR, or refines it first. See [WORKFLOW.md](WORKFLOW.md).
+The repair agent never merges its own changes: it opens a PR, and the maintainer merges it, updates it first, or closes it. See [WORKFLOW.md](WORKFLOW.md). This applies to the repair agent only: AI coding agents working on the maintainer's machine can push to `main` directly (see [AI_USAGE.md](AI_USAGE.md)).
 
 ### 6. Status in the extension (planned)
 
@@ -204,5 +204,5 @@ To measure how well the repair agent works, past page versions (taken from the a
   - **Checks:** aria-labels are a reliable way for the monitor to recognize a stat, since they spell out what a number is, so the checks keep using them.
   - **Finding selectors:** the repair agent, and anyone developing locally, should use aria-labels to find a stat, then derive a selector that doesn't depend on the text.
 - **Privacy of user reports.** A logged-in YouTube page includes the user's name, avatar, recommendations and watch history. Reports must be opt-in, previewed before sending and scrubbed of personal information. They also can't go straight into a public GitHub issue.
-- **Report quality.** Reports can be mistaken, duplicated or deliberately misleading. The repair agent must confirm a problem against the reported snapshot before it proposes a fix, and the maintainer still approves every PR.
+- **Report quality.** Reports can be mistaken, duplicated or deliberately misleading. The repair agent must confirm a problem against the reported snapshot before it proposes a fix, and the maintainer still decides whether to merge every repair PR.
 - **Flaky runs.** Slow page loads, consent dialogs, ads and network failures can make the monitor fail when nothing is actually broken. Pages that fail are loaded a second time, and bot checks and consent pages count as inconclusive, so the project doesn't open PRs for problems that don't exist.

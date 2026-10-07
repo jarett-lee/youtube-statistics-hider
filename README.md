@@ -12,7 +12,7 @@ The question it explores: can AI agents keep a fragile browser extension working
 
 - **Automated checks** load YouTube twice a day and look for stats the extension missed. Once a week, Claude also compares screenshots to catch stats that are still visible and anything hidden by mistake.
 - **A repair agent** (Claude) diagnoses a breakage, edits the hiding rules, tests its fix and opens a pull request.
-- **The maintainer** approves each fix, or refines it with an AI coding agent first.
+- **The maintainer** merges each repair PR, or refines it with an AI coding agent first.
 
 **How it's going:** the extension, the checks and the repair agent are built and running. [METRICS.md](https://github.com/jarett-lee/youtube-statistics-hider/blob/metrics/METRICS.md) tracks how often the extension is broken, how often the wrong thing is hidden, how often repairs work and what they cost, updated after every run.
 

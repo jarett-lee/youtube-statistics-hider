@@ -14,7 +14,7 @@ It's organized around the people the process serves, following goal-directed tas
 
 Three principles follow from these goals:
 
-1. **Automate detection, fixing and checking; the maintainer approves.** Machines watch YouTube around the clock, draft fixes and check them. The DOM text scan and the vision check judge whether a change hides every stat and only stats; that judgment is the automation's job, not the maintainer's. The maintainer approves what ships, based on that evidence, and steps in where the automation falls short. The aim is checks trustworthy enough that approving is quick.
+1. **Automate detection, fixing and checking; the maintainer approves.** Machines watch YouTube around the clock, draft fixes and check them. The DOM text scan and the vision check judge whether a change hides every stat and only stats; that judgment is the automation's job, not the maintainer's. The maintainer approves the repair agent's fixes, based on that evidence, and steps in where the automation falls short. The aim is checks trustworthy enough that approving is quick. (This covers the repair agent, which can only open pull requests. Changes the maintainer makes with an AI coding agent on their own machine can be pushed directly; see [AI_USAGE.md](AI_USAGE.md).)
 2. **A false positive is worse than a missed stat.** A missed stat is the problem the extension exists to solve, so it's expected now and then. Hiding a title or a button breaks YouTube itself for the viewer. Every check, automated or human, should treat anything that hides more than a number with extra suspicion.
 3. **Measure everything.** Recall (stats hidden), false positives (wrong things hidden), repair success rate and cost per repair show whether the approach works. They matter as much as the fixes themselves.
 
@@ -116,7 +116,7 @@ What counts as a stat to hide, and what must stay visible, is defined in [monito
 | **Actor** | AI agent (Claude), boxed in by automation |
 | **Does** | Reads the failed run's DOM snapshots and screenshots, edits `src/hide.css` or `src/content.js`, and re-runs the monitor on the affected pages until they pass or it hits a limit: 20 turns, 4 monitor runs or about $3 (see [Control spend](#control-spend)) |
 | **Then** | A final monitor run on every page, done by the workflow rather than trusted from the agent, decides whether the fix is verified. Repairs always use the vision check, and a fix is verified only if it passes on every page, so nothing that should stay visible was hidden |
-| **Constraints** | The agent works only through its own tools: it can't run commands, reach the network, use git or see any credentials, and can edit only those two files. YouTube pages contain text written by strangers, so the agent is told to treat it as data, and a person reviews everything it writes |
+| **Constraints** | The agent works only through its own tools: it can't run commands, reach the network, use git or see any credentials, and can edit only those two files. YouTube pages contain text written by strangers, so the agent is told to treat it as data, and nothing it writes is merged until the maintainer merges its PR |
 
 ### 5. A pull request is opened
 
