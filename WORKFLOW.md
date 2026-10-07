@@ -152,7 +152,7 @@ Each of these is a moment where a person has to understand something and decide.
 - **Decision:** is this a real breakage, a flaky run or YouTube blocking the runner?
 - **Information needed:** which pages failed, what was visible, whether it repeated.
 - **Today:** GitHub emails the maintainer when a run fails. Failed scheduled runs notify whoever last changed the workflow's schedule; failed push runs notify the pusher. The run page lists each leftover stat with the element it was in, and the artifact has the screenshots. A repair PR also appears in the Pull requests tab.
-- **Gap:** inconclusive runs pass, so a long stretch where YouTube blocks the runner sends no email. The monitor is effectively off without anyone being told.
+- **Blocked monitor:** inconclusive pages don't fail a run. But if a page is inconclusive in three monitor runs in a row, the run fails with a "Monitor blocked" error, so GitHub emails the maintainer instead of the monitor quietly stopping.
 
 ### Approve a repair PR
 
@@ -197,10 +197,9 @@ Each of these is a moment where a person has to understand something and decide.
 Ordered by priority:
 
 1. **Merged fixes don't reach viewers automatically.** Everything up to the merge is automated, but the step the viewer cares about is manual. Fetching rules remotely (planned) closes this.
-2. **A blocked monitor is silent.** Days of inconclusive runs look the same as days of passing runs. A warning after several inconclusive runs in a row would fix this.
-3. **Mistakes only the vision check catches can wait a week.** Mainly wrongly hidden content. Running the vision check when the page layout changes (planned, with the layout fingerprint) would catch these sooner without daily cost.
-4. **The vision check sees only part of each page:** two or three viewport screenshots per page. Something hidden further down isn't judged by anything.
-5. **One open repair PR blocks unrelated repairs.** Tolerable while breakages are rare. If they become frequent, the check could compare the failing pages against the pages the open PR covers.
+2. **Mistakes only the vision check catches can wait a week.** Mainly wrongly hidden content. Running the vision check when the page layout changes (planned, with the layout fingerprint) would catch these sooner without daily cost.
+3. **The vision check sees only part of each page:** two or three viewport screenshots per page. Something hidden further down isn't judged by anything.
+4. **One open repair PR blocks unrelated repairs.** Tolerable while breakages are rare. If they become frequent, the check could compare the failing pages against the pages the open PR covers.
 
 ## Planned parts of the workflow
 

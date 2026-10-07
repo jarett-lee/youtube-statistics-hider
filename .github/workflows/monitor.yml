@@ -214,3 +214,12 @@ jobs:
             ${{ needs.monitor.outputs.metrics }}
             ${{ needs.repair.outputs.metrics }}
           GH_TOKEN: ${{ github.token }}
+
+      # Inconclusive pages don't fail a run, so a monitor that YouTube keeps
+      # blocking would look healthy. Fail this job instead, which makes GitHub
+      # email the maintainer, once a page has been inconclusive 3 runs in a row.
+      - name: Check whether the monitor is being blocked
+        run: |
+          git fetch --quiet --depth=1 origin metrics
+          git show FETCH_HEAD:metrics.jsonl > "$RUNNER_TEMP/metrics.jsonl"
+          node metrics/blocked.mjs "$RUNNER_TEMP/metrics.jsonl"

@@ -96,7 +96,7 @@ Each page gets one of three results:
 
 - **pass:** neither check found a problem.
 - **fail:** a check found a problem, or the extension didn't load. A page that fails is loaded a second time before the failure counts.
-- **inconclusive:** YouTube showed a bot check or consent page instead of content, or the page didn't load. This doesn't fail the run.
+- **inconclusive:** YouTube showed a bot check or consent page instead of content, or the page didn't load. This doesn't fail the run. If a page is inconclusive in three monitor runs in a row, the run's `log` job fails with a "Monitor blocked" error ([metrics/blocked.mjs](metrics/blocked.mjs)), so GitHub emails you instead of the monitor quietly going blind.
 
 Screenshots, DOM snapshots and a summary of each run are saved to `monitor-output/`. In GitHub Actions, the summary appears on the run's page.
 
