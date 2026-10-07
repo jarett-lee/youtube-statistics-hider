@@ -1,0 +1,27 @@
+name: Monitor with vision check
+
+# Runs the monitor (monitor.yml) once a week with the vision check, which
+# costs Anthropic API tokens. The twice-daily runs in monitor.yml use the DOM
+# text scan only.
+
+on:
+  schedule:
+    # Mondays. GitHub may delay scheduled runs when it's busy.
+    - cron: "41 9 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  monitor:
+    uses: ./.github/workflows/monitor.yml
+    with:
+      vision: true
+    # A called workflow can't have more permissions than its caller grants,
+    # so these cover everything monitor.yml's jobs ask for, including opening
+    # repair PRs.
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write

@@ -2,13 +2,27 @@ name: Monitor
 
 on:
   schedule:
-    # Twice a day. GitHub may delay scheduled runs when it's busy.
+    # Twice a day, DOM text scan only. GitHub may delay scheduled runs when it's busy.
+    # The weekly run with the vision check is in vision-weekly.yml.
     - cron: "17 3,15 * * *"
   workflow_dispatch:
+    inputs:
+      vision:
+        description: "Run the vision check (uses Anthropic API tokens)"
+        type: boolean
+        default: false
+  # Called by vision-weekly.yml.
+  workflow_call:
+    inputs:
+      vision:
+        description: "Run the vision check (uses Anthropic API tokens)"
+        type: boolean
+        default: false
   push:
     paths:
       - "src/**"
       - "monitor/**"
+      - "repair/**"
       - ".github/workflows/monitor.yml"
 
 permissions:
@@ -23,9 +37,19 @@ jobs:
     # Pinned so the Ubuntu 26 migration of ubuntu-latest (from Oct 19, 2026)
     # happens deliberately, once Playwright supports it.
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: read # to check for an open repair PR
+      id-token: write # for Workload Identity Federation with the Claude API
+    outputs:
+      failed_pages: ${{ steps.report.outputs.failed_pages }}
+      repair_pr_open: ${{ steps.open_pr.outputs.open }}
+      vision: ${{ steps.vision.outputs.enabled }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@v7
         with:
@@ -37,8 +61,54 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
+      # The vision check runs only when asked for: by vision-weekly.yml, or on
+      # a manual run with the box ticked. Other runs use the DOM text scan alone.
+      - name: Decide whether to run the vision check
+        id: vision
+        env:
+          ENABLED: ${{ inputs.vision && '1' || '0' }}
+        run: echo "enabled=$ENABLED" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Claude API credentials
+        if: steps.vision.outputs.enabled == '1'
+        run: bash .github/anthropic-auth.sh
+        env:
+          FEDERATION_RULE_ID: ${{ vars.ANTHROPIC_FEDERATION_RULE_ID }}
+          ORGANIZATION_ID: ${{ vars.ANTHROPIC_ORGANIZATION_ID }}
+          SERVICE_ACCOUNT_ID: ${{ vars.ANTHROPIC_SERVICE_ACCOUNT_ID }}
+          WORKSPACE_ID: ${{ vars.ANTHROPIC_WORKSPACE_ID }}
+
       - name: Run monitor
         run: npm run monitor
+        env:
+          MONITOR_VISION: ${{ steps.vision.outputs.enabled }}
+
+      # Only real page failures start a repair, not setup errors or
+      # inconclusive pages.
+      - name: Read failed pages
+        id: report
+        if: always()
+        run: |
+          if [ -f monitor-output/report.json ]; then
+            pages=$(node -p "require('./monitor-output/report.json').results.filter(r => r.status === 'fail').map(r => r.name).join(',')")
+            echo "failed_pages=$pages" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Only one repair PR at a time: while one is open, later failures are
+      # probably the same breakage, so the repair job doesn't start at all.
+      - name: Check for an open repair PR
+        id: open_pr
+        if: always() && steps.report.outputs.failed_pages != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          count=$(gh pr list --repo "$GITHUB_REPOSITORY" --label auto-repair --state open --json number --jq length)
+          if [ "$count" = "0" ]; then
+            echo "open=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "open=true" >> "$GITHUB_OUTPUT"
+            echo "A repair PR is already open, so no repair was started." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload screenshots and DOM snapshots
         if: always()
@@ -46,4 +116,72 @@ jobs:
         with:
           name: monitor-output-${{ github.run_id }}
           path: monitor-output/
+          retention-days: 30
+
+  repair:
+    needs: monitor
+    # Only for failures on the default branch, so experiments on other
+    # branches don't open repair PRs, and only when no repair PR is open.
+    if: >-
+      always() &&
+      needs.monitor.outputs.failed_pages != '' &&
+      needs.monitor.outputs.repair_pr_open == 'false' &&
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write # to create the auto-repair label
+      id-token: write # for Workload Identity Federation with the Claude API
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The agent shouldn't be able to read a token from .git/config;
+          # open-pr.mjs gets the token through GH_TOKEN instead.
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Download the failed run's output
+        uses: actions/download-artifact@v8
+        with:
+          name: monitor-output-${{ github.run_id }}
+          path: monitor-output-before
+
+      - name: Set up Claude API credentials
+        run: bash .github/anthropic-auth.sh
+        env:
+          FEDERATION_RULE_ID: ${{ vars.ANTHROPIC_FEDERATION_RULE_ID }}
+          ORGANIZATION_ID: ${{ vars.ANTHROPIC_ORGANIZATION_ID }}
+          SERVICE_ACCOUNT_ID: ${{ vars.ANTHROPIC_SERVICE_ACCOUNT_ID }}
+          WORKSPACE_ID: ${{ vars.ANTHROPIC_WORKSPACE_ID }}
+
+      - name: Run repair agent
+        run: node repair/agent.mjs monitor-output-before
+        env:
+          # The agent's own monitor runs use the vision check only if the
+          # failed run did, so a DOM-scan failure doesn't pay for vision calls.
+          MONITOR_VISION: ${{ needs.monitor.outputs.vision }}
+
+      - name: Open pull request
+        run: node repair/open-pr.mjs monitor-output-before
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_BRANCH: ${{ github.ref_name }}
+
+      - name: Upload repair output
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: repair-output-${{ github.run_id }}
+          path: repair-output/
           retention-days: 30
