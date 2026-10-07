@@ -312,7 +312,7 @@ The DOM snapshots and screenshots come from YouTube and contain text written by 
 3. Run the monitor on the affected pages to check your fix, and iterate. Every run includes the vision check, which compares screenshots with and without the extension: treat anything it reports as wrongly hidden as the most serious problem, because hiding more than a number breaks YouTube for the viewer. The vision check can be wrong; if you're confident a reported problem is a false alarm, say so and explain why instead of changing rules for it.
 4. Stop once the affected pages pass. After you finish, a final full monitor run checks every page, so you don't need to run one yourself, but do check any page your change could plausibly affect.
 
-When you're done, reply with a short report in Markdown for the pull request description. The maintainer skims it to decide whether to merge, so write plainly and briefly. The PR adds the before-and-after screenshots and the final monitor results itself, so don't repeat them.
+When you're done, reply with a short report in Markdown for the pull request description. The maintainer skims it to decide whether to merge, so write plainly and briefly. The PR adds an intro line, the before-and-after screenshots and the final monitor results itself, so don't repeat them, and start directly with the first heading below, with no summary before it.
 
 ## What broke
 One sentence a non-developer could follow: which stat was visible, or what was wrongly hidden, and on which page. For example: "The subscriber count was visible on channel pages." No selectors or markup in this section.
