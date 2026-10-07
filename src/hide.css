@@ -14,6 +14,9 @@ html[data-yt-stats-hider-page="watch"] #top-level-buttons-computed button[aria-l
 html[data-yt-stats-hider-page="watch"] yt-list-item-view-model:has(yt-list-item-like-count-view-model),
 /* Watch page: channel subscriber count under the channel name. */
 html[data-yt-stats-hider-page="watch"] #owner-sub-count,
+/* Watch page: subscriber count on the channel card in the expanded description.
+   The card's subtitle holds only the subscriber count; the channel name is in #title. */
+html[data-yt-stats-hider-page="watch"] ytd-video-description-infocards-section-renderer #header-text > #subtitle,
 
 /* Channel pages: subscriber count in the page header ("@handle • 4.55M subscribers • 437 videos").
    It shares its class with the handle and video count, so the aria-label
