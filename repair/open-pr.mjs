@@ -14,7 +14,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { REPAIR_LABEL, github } from "./github.mjs";
+import { REPAIR_LABEL, UNVERIFIED_END, UNVERIFIED_START, github } from "./github.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUTPUT_DIR = path.resolve(process.env.REPAIR_OUTPUT_DIR || path.join(ROOT, "repair-output"));
@@ -88,7 +88,17 @@ function prBody(result, agentReport, shots) {
   // A verified fix is the normal case and needs no comment; only flag the exception.
   if (!result.verified) {
     lines.push(
-      `⚠️ **Not verified:** this fix didn't pass every final check (see the results below).${result.stopped ? ` The agent stopped early: ${result.stopped}.` : ""} Finish this draft by hand.`,
+      // The Verify repair PR workflow removes everything between these markers
+      // once the fix is verified.
+      UNVERIFIED_START,
+      `⚠️ **Not verified:** this fix didn't pass every final check (see the results below).${result.stopped ? ` The agent stopped early: ${result.stopped}.` : ""}`,
+      "",
+      "To finish this draft:",
+      "1. If the fix needs changes, update this PR's branch, for example with an AI coding agent working from this description and the workflow run's artifacts. If a check failed for a reason unrelated to the fix, such as an error, skip this step.",
+      `2. Run [Verify repair PR](${SERVER}/${REPO}/actions/workflows/verify-pr.yml) from the Actions tab with this PR's number. If every page passes, including the vision check, this PR is marked ready for review.`,
+      "",
+      "Or close this PR: the next failing monitor run starts a new repair.",
+      UNVERIFIED_END,
       "",
     );
   }

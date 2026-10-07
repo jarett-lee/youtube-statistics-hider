@@ -9,6 +9,22 @@ const REPO = process.env.GITHUB_REPOSITORY;
 
 export const REPAIR_LABEL = "auto-repair";
 
+// Invisible markers around the "Not verified" section of a draft repair PR's
+// description, so the Verify repair PR workflow can remove it.
+export const UNVERIFIED_START = "<!-- unverified -->";
+export const UNVERIFIED_END = "<!-- /unverified -->";
+
+/** Removes the "Not verified" section from a repair PR's description. */
+export function removeUnverifiedSection(body) {
+  const start = body.indexOf(UNVERIFIED_START);
+  const end = body.indexOf(UNVERIFIED_END);
+  if (start >= 0 && end > start) {
+    return body.slice(0, start) + body.slice(end + UNVERIFIED_END.length).replace(/^\n+/, "");
+  }
+  // PRs opened before the markers existed have just the warning line.
+  return body.replace(/^⚠️ \*\*Not verified:\*\*.*\n+/m, "");
+}
+
 /**
  * Calls the GitHub API for this repository. `path` is relative to
  * /repos/{owner}/{repo}. Returns the parsed response, or throws with the

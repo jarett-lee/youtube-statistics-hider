@@ -14,7 +14,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { github, graphql } from "./github.mjs";
+import { github, graphql, removeUnverifiedSection } from "./github.mjs";
 import { resultsTable, verificationProblems } from "./verification.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -47,8 +47,7 @@ if (pr.draft) {
 }
 // Drop what only applied while the fix was unverified, and show the new results.
 const title = pr.title.replace(/^\[Unverified\]\s*/, "");
-const description = (pr.body ?? "")
-  .replace(/^⚠️ \*\*Not verified:\*\*.*\n+/m, "")
+const description = removeUnverifiedSection(pr.body ?? "")
   .replace(/(## Final monitor run\n\n)(?:\|.*\n?)+/, `$1${table}\n`);
 if (title !== pr.title || description !== pr.body) await github("PATCH", `/pulls/${number}`, { title, body: description });
 
