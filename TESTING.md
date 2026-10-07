@@ -9,7 +9,7 @@ The workflow paths (see [WORKFLOW.md](WORKFLOW.md)) and whether each has been te
 | # | Flow | Status | Evidence | Notes |
 |---|---|---|---|---|
 | 1 | Schedule (twice daily) > DOM text scan > every page passes | ⚠️ | [run 37607049911](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/37607049911) | Ran before the container, the repair job and the vision check existed. The next scheduled run tests it again |
-| 2 | Push to `src/`, `monitor/` or `repair/` > DOM text scan > every page passes | ✅ 2026-10-07 | [run 37668493265](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/37668493265) | First run in the Playwright container |
+| 2 | Push to `src/`, `monitor/` or `repair/` > DOM text scan > every page passes | ✅ 2026-10-07 | [run 37690102478](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/37690102478) | |
 | 3 | Weekly schedule (`vision-weekly.yml`) > DOM text scan + vision check > every page passes | ⬜ | | First run is next Monday. Also the first test of the vision check in CI |
 | 4 | Manual run with **Run the vision check** ticked > every page passes | ⬜ | | Quicker way to test the vision check in CI than waiting for Monday |
 | 5 | Any run > YouTube shows a bot check or consent page > page inconclusive, run passes | ⬜ | | Can't be triggered on purpose; record it when it happens |
@@ -29,8 +29,8 @@ The workflow paths (see [WORKFLOW.md](WORKFLOW.md)) and whether each has been te
 
 | # | Flow | Status | Evidence | Notes |
 |---|---|---|---|---|
-| 12 | Merge the repair PR > next run passes | ⬜ | | Merging PR #4 tests this |
+| 12 | Merge the repair PR > next run passes | ✅ 2026-10-07 | [run 37684539393](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/37684539393) | The run started by merging PR #4 |
 | 13 | Close the repair PR > next failure starts a new repair | ⬜ | | |
 | 14 | Update the repair PR > Verify repair PR > review again > merge | ⬜ | | |
-| 15 | Draft repair PR > Verify repair PR > every page passes with the vision check > marked ready for review | ⬜ | | PR #6 can test this, once the vision check works in repairs |
+| 15 | Draft repair PR > Verify repair PR > every page passes with the vision check > marked ready for review | ✅ 2026-10-07 | [run 37690445569](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/37690445569), [PR #6](https://github.com/jarett-lee/youtube-statistics-hider/pull/6) | Also the first vision check passing on every page in CI |
 | 16 | Verify repair PR > a page still fails > comment lists the problems, PR stays a draft | ⬜ | | |
