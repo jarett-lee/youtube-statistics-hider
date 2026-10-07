@@ -1,6 +1,6 @@
 # AI usage
 
-This project is deliberately built to use AI agents as much as possible. **All code and documentation in this repository is written by AI agents unless it is marked as written by hand.**
+This project is deliberately built to use AI agents as much as possible as an experiment. **All code and documentation in this repository is written by AI agents unless it is marked as written by hand.**
 
 AI is involved at two levels:
 
