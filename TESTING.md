@@ -13,7 +13,7 @@ The workflow paths (see [WORKFLOW.md](WORKFLOW.md)) and whether each has been te
 | 3 | Weekly schedule (`vision-weekly.yml`) > DOM text scan + vision check > every page passes | ⬜ | | First run is next Monday. Also the first test of the vision check in CI |
 | 4 | Manual run with **Run the vision check** ticked > every page passes | ✅ 2026-10-07 | [run 37691869046](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/37691869046) | |
 | 5 | Any run > YouTube shows a bot check or consent page > page inconclusive, run passes | ⬜ | | Can't be triggered on purpose; record it when it happens |
-| 6 | Any run > log job appends its lines to `metrics.jsonl` and regenerates METRICS.md | ⬜ | | The 23 runs before it were backfilled locally |
+| 6 | Any run > log job appends its lines to `metrics.jsonl` and regenerates METRICS.md | ✅ 2026-10-07 | [run 37701665534](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/37701665534) | The 23 runs before it were backfilled locally |
 
 ## Repair
 
