@@ -47,12 +47,16 @@ const TARGETS = [
       if (await expand.isVisible()) await expand.click();
       await page.waitForTimeout(1500);
     },
-    // The top of the page, then the end of the expanded description, where
-    // some layouts list views and likes. Falls back to the second screen.
+    // The top of the page; the end of the expanded description, where some
+    // layouts list views and likes (falls back to the second screen); and the
+    // first comments, for comment like counts, when they've loaded.
     shotPositions: () => {
       const description = document.querySelector("ytd-watch-metadata #description");
       const bottom = description ? description.getBoundingClientRect().bottom + window.scrollY : 0;
-      return [0, bottom > window.innerHeight ? bottom - window.innerHeight + 40 : window.innerHeight];
+      const positions = [0, bottom > window.innerHeight ? bottom - window.innerHeight + 40 : window.innerHeight];
+      const comment = document.querySelector("ytd-comments ytd-comment-thread-renderer");
+      if (comment) positions.push(comment.getBoundingClientRect().top + window.scrollY - 100);
+      return positions;
     },
   },
   {

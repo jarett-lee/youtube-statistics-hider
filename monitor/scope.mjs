@@ -8,11 +8,12 @@ export const IN_SCOPE = `The extension must hide these engagement stats:
 - The like count on the watch page's like button (the number next to the thumbs-up icon), and the "Likes" figure in the expanded description.
 - The channel's subscriber count under the channel name next to the video on the watch page.
 - The channel's subscriber count in the header at the top of a channel page.
-- The channel's subscriber count on the channel card inside the watch page's expanded description.`;
+- The channel's subscriber count on the channel card inside the watch page's expanded description.
+- Like counts on comments and replies on the watch page (the number next to each comment's thumbs-up icon).`;
 
 export const OUT_OF_SCOPE = `These are NOT hidden yet and are expected to stay visible, so ignore them:
 - Subscriber counts anywhere else (search result channel cards).
-- Comment counts and like counts on comments.
+- The comment count above the comments ("2,458,379 Comments") and reply counts ("962 replies").
 - Live viewer counts ("watching now").
 - Video and channel counts on hashtag and channel pages ("24K videos").
 - Numbers that are part of titles, descriptions, comments or thumbnails, video durations, and dates.`;
