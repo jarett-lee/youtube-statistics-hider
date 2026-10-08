@@ -18,7 +18,7 @@ The question it explores: can AI agents keep a fragile browser extension working
 
 ## Using the extension
 
-The extension will be published to the Chrome Web Store in the future. It isn't available there yet.
+The extension isn't published to the Chrome Web Store, and won't be: it's a proof of concept. To use it, load it from source (see [Load the extension locally](#load-the-extension-locally)).
 
 It only works when YouTube is in English for now. It currently hides:
 
@@ -35,7 +35,7 @@ GitHub Actions checks YouTube twice a day, and weekly with Claude's screenshot c
 
 ### Load the extension locally
 
-This is for developers working on the code. To load the extension from source:
+This is how to use the extension, and how to try changes to it. To load the extension from source:
 
 1. Open `chrome://extensions` in Chrome.
 2. Turn on **Developer mode** in the top-right corner.
