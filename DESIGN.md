@@ -160,7 +160,7 @@ When a scheduled or manual monitor run on the default branch fails, the workflow
    2. In the GitHub repo, open **Settings** → **Secrets and variables** → **Actions**, switch to the **Variables** tab (not Secrets), and add `ANTHROPIC_FEDERATION_RULE_ID`, `ANTHROPIC_ORGANIZATION_ID` and `ANTHROPIC_SERVICE_ACCOUNT_ID`. Add `ANTHROPIC_WORKSPACE_ID` only if the rule covers more than one workspace. They're identifiers, not secrets: without a GitHub identity token from this repo they grant nothing. The workflow reads them as `vars.*`, so they must be variables; saved as secrets, the workflow wouldn't find them.
 
    [.github/anthropic-auth.sh](.github/anthropic-auth.sh) does the token exchange in each job.
-2. **Allow the workflow to open pull requests:** **Settings** → **Actions** → **General** → **Workflow permissions** → tick **Allow GitHub Actions to create and approve pull requests**. Leave the default permissions set to read: each job asks for only the permissions it needs.
+2. **Allow the workflow to open pull requests:** **Settings** → **Actions** → **General** → **Workflow permissions** → tick **Allow GitHub Actions to create and approve pull requests**. Leave the default permissions set to read: each job asks for only the permissions it needs. The jobs use this `GITHUB_TOKEN` in an `Authorization` header and in the git remote URL they push to, as an opaque string. Nothing checks its length or format, so GitHub's new, longer `ghs_` JWT tokens work without changes (issue #9).
 
 To run the agent locally against a failed run's output (it edits `src/` in place, and needs Claude API credentials, for example from `ant auth login`):
 
