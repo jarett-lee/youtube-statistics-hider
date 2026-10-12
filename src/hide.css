@@ -43,3 +43,10 @@ yt-list-item-view-model:has(yt-list-item-view-count-view-model),
 .ytContentMetadataViewModelMetadataText:is([aria-label$=" views" i], [aria-label$=" view" i]) + .ytContentMetadataViewModelDelimiter {
   display: none !important;
 }
+
+/* DELIBERATE TEST BREAKAGE (end-to-end test of the repair agent): collapses the
+   search results list to a thin strip, so the results can't be seen. To be reverted. */
+ytd-search ytd-section-list-renderer {
+  max-height: 120px !important;
+  overflow: hidden !important;
+}
