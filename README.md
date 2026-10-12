@@ -16,22 +16,14 @@ The question it explores: can AI agents keep a fragile browser extension working
 
 ## Results so far
 
+The extension, the checks, and the repair agent are built and running. [METRICS.md](https://github.com/jarett-lee/youtube-statistics-hider/blob/metrics/METRICS.md) tracks how often the extension is broken, how often the wrong thing is hidden, how often repairs work, and what they cost, updated after every run. [COSTS.md](COSTS.md) explains what it spends: under $1 a month when nothing breaks.
+
 - **No real breakage yet.** Every monitor run on `main` has passed, apart from deliberate tests: 24 of 24 runs, with nothing hidden by mistake in the 2 vision checks. YouTube hasn't yet changed its layout in a way that broke the extension.
 - **Every deliberate breakage was caught and repaired, 5 of 5.** To test the system, the maintainer broke it on purpose five times:
   - Three times, the checks were widened to cover a stat the extension didn't hide yet: subscriber counts on channel pages, the channel card in a video's description, and like counts on comments. The repair agent wrote the missing rules, and all three were merged. They're part of the extension today.
   - Twice, a bad rule was planted: one hid the video title, and one collapsed the search results. The vision check caught both, and within minutes the repair agent opened a pull request that removed exactly the bad rule.
-- **Cost:** $0.16–0.56 per repair, $2.44 for all five tests, and under $1 a month when nothing breaks ([COSTS.md](COSTS.md)).
-- **What didn't go as well:**
-  - The free DOM text scan that runs twice a day can't see content hidden by mistake. Only the weekly vision check can, so a rule that hides too much could go unnoticed for up to a week.
-  - The vision check sometimes reports differences between two page loads as problems. The repair agent dismissed these correctly, but they add noise. For example, in the search screenshots below, "YouTube Music" is missing from the sidebar's "More from YouTube" list before the fix and back after it, and the failed run's vision check reported the entry as hidden by the extension. As the repair agent noted in [PR #12](https://github.com/jarett-lee/youtube-statistics-hider/pull/12), it wasn't in that page load's HTML at all, and the extension can only hide elements, not remove them. Why it comes and goes isn't known. Likely causes, none of them verified:
-    - Every page load is a fresh, signed-out browser with no cookies, so YouTube may put each one in a different experiment, with a different sidebar.
-    - GitHub's runners don't all share one location, and YouTube may promote YouTube Music differently by region.
-    - The sidebar may fill in after the rest of the page, so on some loads the snapshot and screenshot are taken before the entry arrives.
-  - The planted rules had a comment saying they were deliberate, and both repair agents quoted it, so those tests were easier than a real breakage would be.
-  - The first repair failed to start three times because of setup errors in the Claude API authentication, before it worked.
-  - Only English is supported, and A/B-tested layouts are out of scope.
 
-[METRICS.md](https://github.com/jarett-lee/youtube-statistics-hider/blob/metrics/METRICS.md) has the current numbers, updated after every run, and [TESTING.md](TESTING.md) has each test with its run.
+[TESTING.md](TESTING.md) has each test and the run that proves it.
 
 ### Before and after
 
@@ -43,6 +35,12 @@ Screenshots from the repair pull requests, with the extension installed. "Before
 | **Comments:** like counts weren't hidden yet ([PR #7](https://github.com/jarett-lee/youtube-statistics-hider/pull/7), merged) | ![Comments showing like counts](https://raw.githubusercontent.com/jarett-lee/youtube-statistics-hider/c906bf204fc9964e80c7fddde3e0e186af0cba5d/37694284530/watch/before-3.png) | ![Comments with like counts hidden](https://raw.githubusercontent.com/jarett-lee/youtube-statistics-hider/c906bf204fc9964e80c7fddde3e0e186af0cba5d/37694284530/watch/after-3.png) |
 | **Planted fault:** a rule hid the video title ([PR #11](https://github.com/jarett-lee/youtube-statistics-hider/pull/11), a test) | ![Video page with the title missing under the player](https://raw.githubusercontent.com/jarett-lee/youtube-statistics-hider/c906bf204fc9964e80c7fddde3e0e186af0cba5d/38304906591/watch/before-1.png) | ![Video page with the title shown again](https://raw.githubusercontent.com/jarett-lee/youtube-statistics-hider/c906bf204fc9964e80c7fddde3e0e186af0cba5d/38304906591/watch/after-1.png) |
 | **Planted fault:** a rule collapsed the search results ([PR #12](https://github.com/jarett-lee/youtube-statistics-hider/pull/12), a test) | ![Search results cut off after the first result](https://raw.githubusercontent.com/jarett-lee/youtube-statistics-hider/c906bf204fc9964e80c7fddde3e0e186af0cba5d/38306705891/search/before-1.png) | ![Search results shown in full](https://raw.githubusercontent.com/jarett-lee/youtube-statistics-hider/c906bf204fc9964e80c7fddde3e0e186af0cba5d/38306705891/search/after-1.png) |
+
+In the search pair, "YouTube Music" is missing from the sidebar before the fix and back after it. The extension didn't hide it: it wasn't in that page load's HTML at all ([PR #12](https://github.com/jarett-lee/youtube-statistics-hider/pull/12)). Why it comes and goes isn't known. Likely causes, none of them verified:
+
+- Every page load is a fresh, signed-out browser profile with no cookies, so YouTube may put each one in a different experiment, with a different sidebar.
+- GitHub's runners don't all share one location, and YouTube may promote YouTube Music differently by region.
+- The sidebar may fill in after the rest of the page, so on some loads the screenshot is taken before the entry arrives.
 
 ## Using the extension
 
