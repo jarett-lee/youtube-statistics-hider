@@ -183,11 +183,11 @@ These are the main result of the experiment. The current numbers are in [METRICS
 | **Repair success rate** | Of repair PRs: verified on the first try, verified after re-checking with Verify repair PR, and merged. Repairs that failed to start, such as on a Claude API setup error, are counted separately |
 | **Cost per repair** | Each repair's estimated cost: the agent plus the vision checks in its monitor runs |
 | **Cost per vision test** | The estimated vision check cost of each monitor run that used it and each Verify repair PR run |
-| **Planted faults** | Tests of the checks and the repair agent: a deliberately broken commit pushed to `main`. Whether any run on it failed a page, whether the vision check flagged it, whether a repair PR fixed it, and what those runs cost |
+| **Deliberate breakages** | Tests of the checks and the repair agent: a commit pushed to `main` that makes the monitor fail on purpose, either a planted fault (a broken hiding rule) or a stat added to the checks before the extension hides it. Whether any run on it failed a page and which check caught it, whether a repair PR fixed it, and what those runs cost |
 
 Costs are estimates from list prices; the Claude Console's usage page for the workspace has the actual spend. Health only covers the monitor's pages, loaded in English and signed out.
 
-Runs on a planted fault are marked by hand with `"test": true` in `metrics.jsonl`, after the test. They count only in the planted-fault rows, so a deliberate breakage doesn't lower Health or add to False positives.
+Runs on a deliberate breakage, and Verify repair PR runs for its repair PR, are marked by hand with `"test": true` in `metrics.jsonl`, after the test. They count only in the deliberate-breakage rows, so Health, False positives and the repair rows reflect only real YouTube changes. So far every failure has been deliberate: the three stats added to the checks on 2026-10-07 (repair PRs #4, #6 and #7, all merged) and the two planted faults on 2026-10-12 (PRs #11 and #12, closed).
 
 **How it's collected:** each workflow run builds one JSON line ([metrics/line.mjs](metrics/line.mjs)) and passes it to a small `log` job, the only job with write access to the `metrics` branch. That job appends it to `metrics.jsonl` ([metrics/append.mjs](metrics/append.mjs)) and regenerates METRICS.md from the whole log ([metrics/report.mjs](metrics/report.mjs)). The branch has its own history and is never merged, so the log doesn't add commits to `main`.
 

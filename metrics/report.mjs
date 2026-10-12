@@ -15,10 +15,12 @@ const avg = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0);
 
 /** Builds METRICS.md from parsed log lines. `merged` maps PR number to true/false (or is null if unknown). */
 export function buildReport(lines, merged = null, branch = "main") {
-  // Runs on a deliberately broken commit (a planted fault) are marked
-  // "test": true in the log by hand. They test the checks and the repair agent,
-  // not the extension, so they're reported in their own rows and left out of
-  // the others.
+  // Runs on a commit that broke the monitor on purpose are marked "test": true
+  // in the log by hand. Such a deliberate breakage is either a planted fault (a
+  // broken hiding rule) or a stat added to the checks before the extension hid
+  // it. These runs test the checks and the repair agent, not how YouTube
+  // changes affect the extension, so they're reported in their own rows and
+  // left out of the others.
   const real = lines.filter((l) => !l.test);
   const tests = lines.filter((l) => l.test);
 
@@ -36,29 +38,36 @@ export function buildReport(lines, merged = null, branch = "main") {
 
   // 3. Repair success. Repairs that never got going (an infrastructure error,
   //    such as a Claude API authentication failure) are counted separately.
-  const repairs = real.filter((l) => l.type === "repair" && !l.error);
-  const errors = real.filter((l) => l.type === "repair" && l.error);
-  const withPr = repairs.filter((r) => r.pr);
-  const firstTry = withPr.filter((r) => r.verified);
-  const verifiedLater = withPr.filter(
-    (r) => !r.verified && lines.some((l) => l.type === "verify" && l.pr === r.pr && l.verified),
-  );
-  const mergedCount = merged ? withPr.filter((r) => merged[r.pr]).length : null;
+  const repairStats = (subset) => {
+    const repairs = subset.filter((l) => l.type === "repair" && !l.error);
+    const errors = subset.filter((l) => l.type === "repair" && l.error);
+    const withPr = repairs.filter((r) => r.pr);
+    const firstTry = withPr.filter((r) => r.verified);
+    const verifiedLater = withPr.filter(
+      (r) => !r.verified && lines.some((l) => l.type === "verify" && l.pr === r.pr && l.verified),
+    );
+    const mergedCount = merged ? withPr.filter((r) => merged[r.pr]).length : null;
+    const detail =
+      `${withPr.length} repair PRs: ${firstTry.length} verified on the first try, ${verifiedLater.length} after re-checking` +
+      (mergedCount === null ? "" : `, ${mergedCount} merged`) +
+      (repairs.length > withPr.length ? `. ${repairs.length - withPr.length} repairs made no change` : "") +
+      (errors.length ? `. ${errors.length} repairs failed to start (setup errors)` : "");
+    return { repairs, withPr, verified: firstTry.length + verifiedLater.length, detail };
+  };
+  const realRepairs = repairStats(real);
 
-  // Planted faults: did a check catch each one, and did the repair agent fix it?
-  //    A fault counts as caught if any run on its commit failed a page.
+  // Deliberate breakages: did a check catch each one, and did the repair agent
+  // fix it? A breakage counts as caught if any run on its commit failed a page,
+  // and as caught by the vision check if a vision check on it failed a page.
   const testRuns = tests.filter(isRun);
-  const faults = new Set(testRuns.map((l) => l.sha));
+  const breakages = new Set(testRuns.map((l) => l.sha));
   const caught = new Set(testRuns.filter((l) => l.pages.some((p) => p.status === "fail")).map((l) => l.sha));
-  const testVisionRuns = testRuns.filter((l) => l.vision);
-  const visionCaught = testVisionRuns.filter((l) => l.pages.some((p) => p.vision === "fail"));
-  const testRepairs = tests.filter((l) => l.type === "repair" && !l.error);
-  const testPrs = testRepairs.filter((r) => r.pr);
-  const testVerified = testPrs.filter((r) => r.verified || lines.some((l) => l.type === "verify" && l.pr === r.pr && l.verified));
+  const byVision = new Set(testRuns.filter((l) => l.pages.some((p) => p.vision === "fail")).map((l) => l.sha));
+  const testRepairs = repairStats(tests);
   const testCost = tests.reduce((sum, l) => sum + (l.type === "repair" ? (l.cost_usd ?? 0) : (l.vision_cost_usd ?? 0)), 0);
 
   // 4. Cost per repair (the agent plus the vision checks in its monitor runs).
-  const repairCosts = repairs.map((r) => r.cost_usd ?? 0);
+  const repairCosts = realRepairs.repairs.map((r) => r.cost_usd ?? 0);
 
   // 5. Cost per vision test: monitor runs with the vision check, and Verify repair PR runs.
   const visionTests = [...visionRuns, ...real.filter((l) => l.type === "verify")];
@@ -67,24 +76,21 @@ export function buildReport(lines, merged = null, branch = "main") {
   const rows = [
     ["Health", `${pct(runs.length - broken.length, runs.length)} of runs`, `${runs.length - broken.length} of ${runs.length} monitor runs on \`${branch}\` had no failing page`],
     ["False positives", `${fpFindings} found`, `in ${fpRuns.length} of ${visionRuns.length} vision runs`],
-    [
-      "Repair success",
-      `${pct(firstTry.length + verifiedLater.length, withPr.length)} verified`,
-      `${withPr.length} repair PRs: ${firstTry.length} verified on the first try, ${verifiedLater.length} after re-checking` +
-        (mergedCount === null ? "" : `, ${mergedCount} merged`) +
-        (repairs.length > withPr.length ? `. ${repairs.length - withPr.length} repairs made no change` : "") +
-        (errors.length ? `. ${errors.length} repairs failed to start (setup errors)` : ""),
-    ],
-    ["Cost per repair", repairs.length ? `${usd(avg(repairCosts))} average` : "–", `${usd(repairCosts.reduce((a, b) => a + b, 0))} over ${repairs.length} repairs (estimate)`],
+    realRepairs.withPr.length || realRepairs.repairs.length
+      ? ["Repair success", `${pct(realRepairs.verified, realRepairs.withPr.length)} verified`, realRepairs.detail]
+      : ["Repair success", "–", "No real breakage has needed a repair yet"],
+    repairCosts.length
+      ? ["Cost per repair", `${usd(avg(repairCosts))} average`, `${usd(repairCosts.reduce((a, b) => a + b, 0))} over ${repairCosts.length} repairs (estimate)`]
+      : ["Cost per repair", "–", "No repairs yet"],
     ["Cost per vision test", visionTests.length ? `${usd(avg(visionCosts))} average` : "–", `${usd(visionCosts.reduce((a, b) => a + b, 0))} over ${visionTests.length} vision tests (estimate)`],
   ];
-  if (faults.size) {
+  if (breakages.size) {
     rows.push(
-      ["Planted faults caught", `${caught.size} of ${faults.size}`, `the vision check flagged ${visionCaught.length} of ${testVisionRuns.length} vision runs on a planted fault`],
+      ["Deliberate breakages caught", `${caught.size} of ${breakages.size}`, `${byVision.size} by the vision check, ${caught.size - byVision.size} by the DOM text scan`],
       [
-        "Planted faults repaired",
-        `${testVerified.length} of ${faults.size}`,
-        `${testPrs.length} repair PRs, ${testVerified.length} verified. ${usd(testCost)} spent on planted-fault runs (estimate)`,
+        "Deliberate breakages repaired",
+        `${testRepairs.verified} of ${breakages.size}`,
+        `${testRepairs.detail}. ${usd(testCost)} spent on these runs (estimate)`,
       ],
     );
   }
@@ -94,7 +100,7 @@ export function buildReport(lines, merged = null, branch = "main") {
     "# Metrics",
     "",
     `How the YouTube Statistics Hider experiment is going, from ${lines.length} logged workflow runs${times.length ? ` (${times[0].slice(0, 10)} to ${times.at(-1).slice(0, 10)})` : ""}. Generated from [metrics.jsonl](metrics.jsonl) after every run; costs are estimates from list prices.` +
-      (tests.length ? ` ${tests.length} of the runs tested a deliberately broken commit (a planted fault) and count only in the planted-fault rows.` : ""),
+      (tests.length ? ` ${tests.length} of the runs tested a deliberate breakage and count only in the deliberate-breakage rows.` : ""),
     "",
     "| Metric | Value | Detail |",
     "|---|---|---|",
