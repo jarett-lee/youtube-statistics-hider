@@ -43,9 +43,3 @@ yt-list-item-view-model:has(yt-list-item-view-count-view-model),
 .ytContentMetadataViewModelMetadataText:is([aria-label$=" views" i], [aria-label$=" view" i]) + .ytContentMetadataViewModelDelimiter {
   display: none !important;
 }
-
-/* DELIBERATE TEST BREAKAGE (end-to-end test of the repair agent): hides the
-   watch page's video title, which must stay visible. To be reverted. */
-html[data-yt-stats-hider-page="watch"] ytd-watch-metadata #title {
-  display: none !important;
-}
