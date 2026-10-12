@@ -22,6 +22,8 @@ The extension, the checks, and the repair agent are built and running. [METRICS.
 - **Every deliberate breakage was caught and repaired, 5 of 5.** To test the system, the maintainer broke it on purpose five times:
   - Three times, the checks were widened to cover a stat the extension didn't hide yet: subscriber counts on channel pages, the channel card in a video's description, and like counts on comments. The repair agent wrote the missing rules, and all three were merged. They're part of the extension today.
   - Twice, a bad rule was planted: one hid the video title, and one collapsed the search results. The vision check caught both, and within minutes the repair agent opened a pull request that removed exactly the bad rule.
+- **The vision check caught both planted faults but didn't describe them exactly.** Each time it also reported something the extension didn't cause: a missing "Video details" section, and a hidden "YouTube Music" sidebar entry. Both came from differences between the two page loads, and the repair agent set them aside.
+- **"YouTube Music" shows up unreliably.** It appears in the sidebar on some page loads and not others, as in the search screenshots below.
 
 [TESTING.md](TESTING.md) has each test and the run that proves it.
 
