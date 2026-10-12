@@ -23,7 +23,7 @@ Write each document for its readers, and keep these in mind when deciding what g
 | Repair PR descriptions (written by [repair/open-pr.mjs](repair/open-pr.mjs) and the agent) | The maintainer, deciding whether to approve | The evidence needed to approve quickly |
 ## Conventions
 
-- Mark features that aren't built yet as **(planned)** in the docs; don't describe them as working.
+- Mark features that were designed but won't be built as **(not planned)** in the docs; don't describe them as working.
 - A false positive (hiding something that isn't a stat) is worse than a missed stat.
 - What the extension must hide, and what must stay visible, is defined in [monitor/scope.mjs](monitor/scope.mjs). Keep it in sync with the rules in `src/` and the patterns in [monitor/checks.mjs](monitor/checks.mjs).
 - Only English is supported for now. In hiding rules, prefer selectors that don't depend on text (element tags, IDs, structure); keep aria-label and text matches only as English fallbacks. Checks may rely on aria-labels. When writing a rule, use the aria-label to find the stat, then derive a text-independent selector (see issue #5).

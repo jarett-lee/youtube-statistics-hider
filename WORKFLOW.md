@@ -2,7 +2,7 @@
 
 How the extension is kept working as YouTube changes: what runs, who decides what, and where people come in. [DESIGN.md](DESIGN.md) covers how each part works and how to run it; this document covers the process and the reasoning behind it.
 
-It's organized around the people the process serves, following goal-directed task analysis: start from each person's goals, list the decisions they have to make, and work out what information each decision needs. The automation exists to supply that information and do the routine work, not the other way round. Sections marked **(planned)** describe parts that aren't built yet.
+It's organized around the people the process serves, following goal-directed task analysis: start from each person's goals, list the decisions they have to make, and work out what information each decision needs. The automation exists to supply that information and do the routine work, not the other way round. Sections marked **(not planned)** describe parts that were designed but won't be built.
 
 ## Who it's for
 
@@ -140,7 +140,7 @@ What counts as a stat to hide, and what must stay visible, is defined in [monito
 |---|---|
 | **Actor** | Human, today |
 | **Does** | Nothing automatic yet. The hiding rules are bundled with the extension, so a merged fix reaches a viewer only when they reload the extension from source |
-| **(planned)** | Rules fetched from the project (for example from GitHub Pages), so a merged fix reaches every viewer without a new release |
+| **(not planned)** | Rules fetched from the project (for example from GitHub Pages), so a merged fix reaches every viewer without a new release |
 
 ## Where people come in
 
@@ -196,12 +196,12 @@ Each of these is a moment where a person has to understand something and decide.
 
 Ordered by priority:
 
-1. **Merged fixes don't reach viewers automatically.** Everything up to the merge is automated, but the step the viewer cares about is manual. Fetching rules remotely (planned) closes this.
-2. **Mistakes only the vision check catches can wait a week.** Mainly wrongly hidden content. Running the vision check when the page layout changes (planned, with the layout fingerprint) would catch these sooner without daily cost.
+1. **Merged fixes don't reach viewers automatically.** Everything up to the merge is automated, but the step the viewer cares about is manual. Fetching rules remotely (not planned) would close this.
+2. **Mistakes only the vision check catches can wait a week.** Mainly wrongly hidden content. Running the vision check when the page layout changes (not planned) would catch these sooner without daily cost.
 3. **The vision check sees only part of each page:** two or three viewport screenshots per page. Something hidden further down isn't judged by anything.
 4. **One open repair PR blocks unrelated repairs.** Tolerable while breakages are rare. If they become frequent, the check could compare the failing pages against the pages the open PR covers.
 
-## Planned parts of the workflow
+## Parts of the workflow that won't be built
 
 These are described in [DESIGN.md](DESIGN.md#components) but weren't built: the project is a finished proof of concept with a fixed scope ([COSTS.md](COSTS.md)).
 

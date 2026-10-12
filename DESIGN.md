@@ -1,6 +1,6 @@
 # Design
 
-The technical design of the YouTube Statistics Hider: how its parts work, how to run them, and how the project will be evaluated. For the process around them, including who decides what, see [WORKFLOW.md](WORKFLOW.md). Parts marked **(planned)** were designed but aren't built. The project is now a finished proof of concept with a fixed scope, so they aren't expected to be ([COSTS.md](COSTS.md) explains why).
+The technical design of the YouTube Statistics Hider: how its parts work, how to run them, and how the project will be evaluated. For the process around them, including who decides what, see [WORKFLOW.md](WORKFLOW.md). Parts marked **(not planned)** were designed but won't be built ([COSTS.md](COSTS.md) explains why).
 
 ## Components
 
@@ -10,7 +10,7 @@ The extension hides elements matched by CSS rules in [src/hide.css](src/hide.css
 
 It currently hides view counts on every page, and the like count and the channel's subscriber count on the watch page.
 
-**(planned)**
+**(not planned)**
 
 - **Remote rules:** the rules are kept separate from the extension code and fetched from the project, so a fix doesn't need a new extension release.
 - **Heuristic fallback:** a general scan of visible text for stat-like patterns (such as `1.2M views` or `34K likes`), to catch numbers that no rule covers yet, including those in A/B-test layouts.
@@ -19,7 +19,7 @@ It currently hides view counts on every page, and the like count and the channel
 
 GitHub Actions loads YouTube in Playwright with the extension installed and checks that no stats are left visible, using a DOM text scan and, on some runs, a vision check. See [Monitor](#monitor) below.
 
-### 3. User reports (planned)
+### 3. User reports (not planned)
 
 The monitor sees only the layouts its own test runs are given. Users see many more, so the extension also accepts breakage reports directly.
 
@@ -33,7 +33,7 @@ A report contains:
 - the page URL
 - a DOM snapshot and a screenshot with the extension on
 - a DOM snapshot with the extension's hiding removed
-- the current rules version and layout fingerprint (see [Status in the extension](#6-status-in-the-extension-planned))
+- the current rules version and layout fingerprint (see [Status in the extension](#6-status-in-the-extension-not-planned))
 
 A report doesn't include a screenshot with the extension off, because taking one would show the user the numbers they chose to hide.
 
@@ -55,7 +55,7 @@ With and without the extension, the agent can compare what the page is supposed 
 
 The repair agent never merges its own changes: it opens a PR, and the maintainer merges it, updates it first, or closes it. See [WORKFLOW.md](WORKFLOW.md). This applies to the repair agent only: AI coding agents working on the maintainer's machine can push to `main` directly (see [AI_USAGE.md](AI_USAGE.md)).
 
-### 6. Status in the extension (planned)
+### 6. Status in the extension (not planned)
 
 The project publishes a **status feed** that the extension reads, and the popup shows its contents:
 
@@ -124,7 +124,7 @@ monitor-output/
 - **Storage cost:** artifact storage is free for public repositories. In a private repository it counts toward the account's Actions storage quota (500 MB on the free plan), so retention would need to be much shorter.
 - **Access:** anyone who can see the repository and is signed in to GitHub can download artifacts.
 
-Artifacts are for debugging recent runs. The long-term archive of DOM snapshots described under [Regression archive](#regression-archive-planned) needs separate, permanent storage.
+Artifacts are for debugging recent runs. The long-term archive of DOM snapshots described under [Regression archive](#regression-archive-not-planned) needs separate, permanent storage.
 
 ### Configuration
 
@@ -188,17 +188,17 @@ Costs are estimates from list prices; the Claude Console's usage page for the wo
 
 **How it's collected:** each workflow run builds one JSON line ([metrics/line.mjs](metrics/line.mjs)) and passes it to a small `log` job, the only job with write access to the `metrics` branch. That job appends it to `metrics.jsonl` ([metrics/append.mjs](metrics/append.mjs)) and regenerates METRICS.md from the whole log ([metrics/report.mjs](metrics/report.mjs)). The branch has its own history and is never merged, so the log doesn't add commits to `main`.
 
-### Regression archive (planned)
+### Regression archive (not planned)
 
 DOM snapshots are archived on every run. Over time this builds a regression suite of real YouTube layout changes. Every rules update is tested against the whole suite, so a fix for one layout doesn't break another.
 
-### Redesign replay (planned)
+### Redesign replay (not planned)
 
 To measure how well the repair agent works, past page versions (taken from the archive or the [Wayback Machine](https://web.archive.org/)) are replayed as simulated breakages. The agent tries to repair each one, and the results show how often it succeeds on the first try.
 
 ## Challenges
 
-- **A/B testing.** Different users get different layouts, and a single monitor run sees only one variant. Selectors alone won't cover every variant, which is why matching by text matters. User reports and layout fingerprints (planned) would help find variants that the monitor never sees.
+- **A/B testing.** Different users get different layouts, and a single monitor run sees only one variant. Selectors alone won't cover every variant, which is why matching by text matters. User reports and layout fingerprints (not planned) would help find variants that the monitor never sees.
 - **Language.** Only English is supported for now. Several rules find a stat by its English wording: aria-labels such as "19 thousand views", and text such as "1,234 views". With YouTube in another language those stats stay visible, and the monitor can't notice, because it only loads pages in English. The direction until other languages are supported ([issue #5](https://github.com/jarett-lee/youtube-statistics-hider/issues/5)):
   - **Rules:** prefer selectors that don't depend on text (element tags, IDs, structure) where YouTube's markup allows. Keep aria-label and text rules only as English fallbacks.
   - **Checks:** aria-labels are a reliable way for the monitor to recognize a stat, since they spell out what a number is, so the checks keep using them.
