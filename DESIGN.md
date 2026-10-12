@@ -183,8 +183,11 @@ These are the main result of the experiment. The current numbers are in [METRICS
 | **Repair success rate** | Of repair PRs: verified on the first try, verified after re-checking with Verify repair PR, and merged. Repairs that failed to start, such as on a Claude API setup error, are counted separately |
 | **Cost per repair** | Each repair's estimated cost: the agent plus the vision checks in its monitor runs |
 | **Cost per vision test** | The estimated vision check cost of each monitor run that used it and each Verify repair PR run |
+| **Planted faults** | Tests of the checks and the repair agent: a deliberately broken commit pushed to `main`. Whether any run on it failed a page, whether the vision check flagged it, whether a repair PR fixed it, and what those runs cost |
 
 Costs are estimates from list prices; the Claude Console's usage page for the workspace has the actual spend. Health only covers the monitor's pages, loaded in English and signed out.
+
+Runs on a planted fault are marked by hand with `"test": true` in `metrics.jsonl`, after the test. They count only in the planted-fault rows, so a deliberate breakage doesn't lower Health or add to False positives.
 
 **How it's collected:** each workflow run builds one JSON line ([metrics/line.mjs](metrics/line.mjs)) and passes it to a small `log` job, the only job with write access to the `metrics` branch. That job appends it to `metrics.jsonl` ([metrics/append.mjs](metrics/append.mjs)) and regenerates METRICS.md from the whole log ([metrics/report.mjs](metrics/report.mjs)). The branch has its own history and is never merged, so the log doesn't add commits to `main`.
 
