@@ -69,7 +69,7 @@ export function buildReport(lines, merged = null, branch = "main") {
   // 4. Cost per repair (the agent plus the vision checks in its monitor runs).
   const repairCosts = realRepairs.repairs.map((r) => r.cost_usd ?? 0);
 
-  // 5. Cost per vision test: monitor runs with the vision check, and Verify repair PR runs.
+  // 5. Cost per vision check: monitor runs with the vision check, and Verify repair PR runs.
   const visionTests = [...visionRuns, ...real.filter((l) => l.type === "verify")];
   const visionCosts = visionTests.map((l) => l.vision_cost_usd ?? 0);
 
@@ -82,7 +82,7 @@ export function buildReport(lines, merged = null, branch = "main") {
     repairCosts.length
       ? ["Cost per repair", `${usd(avg(repairCosts))} average`, `${usd(repairCosts.reduce((a, b) => a + b, 0))} over ${repairCosts.length} repairs (estimate)`]
       : ["Cost per repair", "–", "No repairs yet"],
-    ["Cost per vision test", visionTests.length ? `${usd(avg(visionCosts))} average` : "–", `${usd(visionCosts.reduce((a, b) => a + b, 0))} over ${visionTests.length} vision tests (estimate)`],
+    ["Cost per vision check", visionTests.length ? `${usd(avg(visionCosts))} average` : "–", `${usd(visionCosts.reduce((a, b) => a + b, 0))} over ${visionTests.length} vision checks (estimate)`],
   ];
   if (breakages.size) {
     rows.push(

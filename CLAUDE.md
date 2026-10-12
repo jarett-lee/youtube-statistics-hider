@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A Chrome extension (Manifest V3) that hides YouTube engagement stats, kept working by AI agents: a Playwright monitor in GitHub Actions detects breakages, and a Claude repair agent drafts fixes as pull requests for the maintainer to approve. The project is an experiment in using AI agents as much as possible, so all code and documentation is AI-written unless marked otherwise ([AI_USAGE.md](AI_USAGE.md)).
 
-It's a finished proof of concept in maintenance mode: the scope is fixed. Don't add pages to the monitor, widen the vision check or add anything else that costs money without asking first ([COSTS.md](COSTS.md)).
+It's a finished proof of concept in maintenance mode: the scope is fixed. Don't add pages to the monitor, widen the vision check, or add anything else that costs money without asking first ([COSTS.md](COSTS.md)).
 
 ## Audiences
 

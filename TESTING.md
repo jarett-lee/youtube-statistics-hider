@@ -9,7 +9,7 @@ The workflow paths (see [WORKFLOW.md](WORKFLOW.md)) and whether each has been te
 | # | Flow | Status | Evidence | Notes |
 |---|---|---|---|---|
 | 1 | Schedule (twice daily) > DOM text scan > every page passes | ✅ 2026-10-12 | [run 38240093351](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/38240093351) | |
-| 2 | Push to `src/`, `monitor/` or `repair/` > DOM text scan > every page passes | ✅ 2026-10-12 | [run 38307607470](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/38307607470) | |
+| 2 | Push to `src/`, `monitor/`, or `repair/` > DOM text scan > every page passes | ✅ 2026-10-12 | [run 38307607470](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/38307607470) | |
 | 3 | Weekly schedule (`vision-weekly.yml`) > DOM text scan + vision check > every page passes | ✅ 2026-10-12 | [run 38296786930](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/38296786930) | |
 | 4 | Manual run with **Run the vision check** ticked > every page passes | ✅ 2026-10-07 | [run 37691869046](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/37691869046) | |
 | 5 | Push > a rule hides content it shouldn't > DOM text scan > every page passes | ✅ 2026-10-12 | [run 38304590678](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/38304590678), [run 38306422401](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/38306422401) | Expected: the DOM text scan only finds stats left visible, so only the vision check catches this. Planted faults (rows 10 and 11) |
@@ -27,7 +27,7 @@ The workflow paths (see [WORKFLOW.md](WORKFLOW.md)) and whether each has been te
 | 12 | Manual > DOM text scan > page fails > repair PR already open > repair job doesn't start | ✅ 2026-10-07 | [run 37677463808](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/37677463808) | The check found PR #4 |
 | 13 | Repair > fix not verified > draft pull request marked `[Unverified]`, with steps to finish it | ⬜ | | |
 | 14 | Repair > agent makes no changes > no pull request | ⬜ | | |
-| 15 | Repair > agent hits a limit (turns, monitor runs or $3) > stops, draft pull request | ⬜ | | Lower `REPAIR_MAX_COST_USD` to trigger it |
+| 15 | Repair > agent hits a limit (turns, monitor runs, or $3) > stops, draft pull request | ⬜ | | Lower `REPAIR_MAX_COST_USD` to trigger it |
 | 16 | Repair > Claude API authentication fails > repair agent step fails, no pull request | ✅ 2026-10-07 | [run 37671786939](https://github.com/jarett-lee/youtube-statistics-hider/actions/runs/37671786939), attempts 1–3 | Tested by accident: subject format, then workspace membership |
 
 ## After a repair pull request

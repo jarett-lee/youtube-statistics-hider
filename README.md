@@ -1,6 +1,6 @@
 # YouTube Statistics Hider
 
-A Chrome extension that hides engagement numbers on YouTube, such as view, like and subscriber counts, and uses AI agents to repair itself when YouTube's layout changes.
+A Chrome extension that hides engagement numbers on YouTube, such as view, like, and subscriber counts, and uses AI agents to repair itself when YouTube's layout changes.
 
 > **Status:** finished proof of concept, in maintenance mode. The scope is fixed, and the project is left running to see how it handles YouTube's changes over time.
 
@@ -10,7 +10,7 @@ This project is deliberately built to use AI agents as much as possible as an ex
 
 The question it explores: can AI agents keep a fragile browser extension working on their own, with a person only approving their changes? YouTube changes its markup often and A/B tests layouts, so most statistics hiders, which depend on hand-written CSS selectors, break without warning. This one treats breakage as expected:
 
-- **Automated checks** load YouTube twice a day and look for stats the extension missed. Once a week, Claude also compares screenshots to catch stats that are still visible and anything hidden by mistake.
+- **Automated checks** load YouTube twice a day and look for stats the extension missed. Once a week, a vision check also has Claude compare screenshots, to catch stats that are still visible and anything hidden by mistake.
 - **A repair agent** (Claude) works out what broke, fixes the hiding rules, checks its fix with the same tests, and opens a pull request.
 - **The maintainer** merges each repair PR, or refines it with an AI coding agent first.
 
@@ -22,8 +22,11 @@ The question it explores: can AI agents keep a fragile browser extension working
   - Twice, a bad rule was planted: one hid the video title, and one collapsed the search results. The vision check caught both, and within minutes the repair agent opened a pull request that removed exactly the bad rule.
 - **Cost:** $0.16–0.56 per repair, $2.44 for all five tests, and under $1 a month when nothing breaks ([COSTS.md](COSTS.md)).
 - **What didn't go as well:**
-  - The free DOM scan that runs twice a day can't see content hidden by mistake. Only the weekly vision check can, so a rule that hides too much could go unnoticed for up to a week.
-  - The vision check sometimes reports differences between two page loads as problems. The repair agent dismissed these correctly, but they add noise.
+  - The free DOM text scan that runs twice a day can't see content hidden by mistake. Only the weekly vision check can, so a rule that hides too much could go unnoticed for up to a week.
+  - The vision check sometimes reports differences between two page loads as problems. The repair agent dismissed these correctly, but they add noise. For example, in the search screenshots below, "YouTube Music" is missing from the sidebar's "More from YouTube" list before the fix and back after it, and the failed run's vision check reported the entry as hidden by the extension. As the repair agent noted in [PR #12](https://github.com/jarett-lee/youtube-statistics-hider/pull/12), it wasn't in that page load's HTML at all, and the extension can only hide elements, not remove them. Why it comes and goes isn't known. Likely causes, none of them verified:
+    - Every page load is a fresh, signed-out browser with no cookies, so YouTube may put each one in a different experiment, with a different sidebar.
+    - GitHub's runners don't all share one location, and YouTube may promote YouTube Music differently by region.
+    - The sidebar may fill in after the rest of the page, so on some loads the snapshot and screenshot are taken before the entry arrives.
   - The planted rules had a comment saying they were deliberate, and both repair agents quoted it, so those tests were easier than a real breakage would be.
   - The first repair failed to start three times because of setup errors in the Claude API authentication, before it worked.
   - Only English is supported, and A/B-tested layouts are out of scope.
@@ -54,7 +57,7 @@ It only works when YouTube is in English for now. It currently hides:
 
 ## How it keeps working
 
-GitHub Actions checks YouTube twice a day, and weekly with Claude's screenshot check as well. When something breaks, the repair agent drafts a fix and opens a pull request, and the maintainer approves it. [WORKFLOW.md](WORKFLOW.md) has the full workflow with a diagram: each step, which steps are automated or use AI agents, where people come in, and the known gaps.
+GitHub Actions checks YouTube twice a day, and weekly with the vision check as well. When something breaks, the repair agent drafts a fix and opens a pull request, and the maintainer approves it. [WORKFLOW.md](WORKFLOW.md) has the full workflow with a diagram: each step, which steps are automated or use AI agents, where people come in, and the known gaps.
 
 ## For developers
 

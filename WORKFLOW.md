@@ -8,15 +8,15 @@ It's organized around the people the process serves, following goal-directed tas
 
 | Person | Goal | What failure looks like to them |
 |---|---|---|
-| **Viewer** (uses the extension) | Watch YouTube without engagement numbers influencing what they watch | A view or like count appears (missed stat), or something they need disappears, such as a title, date or button (false positive) |
+| **Viewer** (uses the extension) | Watch YouTube without engagement numbers influencing what they watch | A view or like count appears (missed stat), or something they need disappears, such as a title, date, or button (false positive) |
 | **Maintainer** (owns this repo) | Keep the extension working with little time spent, and never ship a change they don't trust | Finding out about a breakage from a viewer, spending hours diagnosing a layout change, or merging a rule that hides the wrong thing |
-| **Maintainer as experimenter** (this is an exploratory project) | Learn how well AI agents can keep the extension working on their own | Not knowing whether the agents are doing well: how many stats they catch, how often they hide the wrong thing, how often repairs work and what they cost |
+| **Maintainer as experimenter** (this is an exploratory project) | Learn how well AI agents can keep the extension working on their own | Not knowing whether the agents are doing well: how many stats they catch, how often they hide the wrong thing, how often repairs work, and what they cost |
 
 Three principles follow from these goals:
 
-1. **Automate detection, fixing and checking; the maintainer approves.** Machines watch YouTube around the clock, draft fixes and check them. The DOM text scan and the vision check judge whether a change hides every stat and only stats; that judgment is the automation's job, not the maintainer's. The maintainer approves the repair agent's fixes, based on that evidence, and steps in where the automation falls short. The aim is checks trustworthy enough that approving is quick. (This covers the repair agent, which can only open pull requests. Changes the maintainer makes with an AI coding agent on their own machine can be pushed directly; see [AI_USAGE.md](AI_USAGE.md).)
+1. **Automate detection, fixing, and checking; the maintainer approves.** Machines watch YouTube around the clock, draft fixes, and check them. The DOM text scan and the vision check judge whether a change hides every stat and only stats; that judgment is the automation's job, not the maintainer's. The maintainer approves the repair agent's fixes, based on that evidence, and steps in where the automation falls short. The aim is checks trustworthy enough that approving is quick. (This covers the repair agent, which can only open pull requests. Changes the maintainer makes with an AI coding agent on their own machine can be pushed directly; see [AI_USAGE.md](AI_USAGE.md).)
 2. **A false positive is worse than a missed stat.** A missed stat is the problem the extension exists to solve, so it's expected now and then. Hiding a title or a button breaks YouTube itself for the viewer. Every check, automated or human, should treat anything that hides more than a number with extra suspicion.
-3. **Measure everything.** Recall (stats hidden), false positives (wrong things hidden), repair success rate and cost per repair show whether the approach works. They matter as much as the fixes themselves.
+3. **Measure everything.** Recall (stats hidden), false positives (wrong things hidden), repair success rate, and cost per repair show whether the approach works. They matter as much as the fixes themselves.
 
 ## Who does what
 
@@ -24,7 +24,7 @@ Each step is done by one of these actors:
 
 | Actor | Kind | Role |
 |---|---|---|
-| GitHub Actions scheduler | Automation | Starts runs on a schedule, on pushes and on request |
+| GitHub Actions scheduler | Automation | Starts runs on a schedule, on pushes, and on request |
 | Monitor (DOM text scan, page loading, bot-check detection) | Automation, deterministic code | Detects breakages. Same input, same result |
 | Vision check | AI agent (Claude) | Judges screenshots: are any stats still visible, and is anything hidden that should stay visible? |
 | Repair agent | AI agent (Claude) | Diagnoses breakages and drafts fixes. Its work is checked by the monitor, including the vision check, before the maintainer sees it |
@@ -85,7 +85,7 @@ Yellow steps are done by a person (updating a PR, usually with an AI coding agen
 | | |
 |---|---|
 | **Actor** | Scheduler, or the maintainer |
-| **Triggers** | Twice a day (DOM text scan only); weekly through `vision-weekly.yml` (adds the vision check); pushes to `src/`, `monitor/` or `repair/`; manual runs, with an optional **Run the vision check** box |
+| **Triggers** | Twice a day (DOM text scan only); weekly through `vision-weekly.yml` (adds the vision check); pushes to `src/`, `monitor/`, or `repair/`; manual runs, with an optional **Run the vision check** box |
 | **Why this split** | The DOM text scan is free, so it runs often to catch breakages within about 12 hours. The vision check costs API tokens, so it runs weekly or when a person asks for it |
 | **What can go wrong** | GitHub can delay scheduled runs, and turns schedules off in public repos after 60 days without activity |
 
@@ -95,8 +95,8 @@ Yellow steps are done by a person (updating a PR, usually with an AI coding agen
 |---|---|
 | **Actor** | Automation (DOM text scan) and AI agent (vision check, when on) |
 | **Does** | Loads each target page (a watch page, search, a hashtag page, a channel's videos) with and without the extension. Scans the visible text for stats, and on vision runs asks Claude to compare screenshots for missed stats and wrongly hidden content. A failing page gets a second attempt before the failure counts |
-| **Produces** | A pass, fail or inconclusive result per page; a summary on the run page; an artifact with screenshots and DOM snapshots (kept 30 days) |
-| **What can go wrong** | YouTube shows a bot check or consent page (reported as inconclusive, not a failure); the DOM scan's patterns miss a new format; the vision check misreads a screenshot (false alarm or missed stat) |
+| **Produces** | A pass, fail, or inconclusive result per page; a summary on the run page; an artifact with screenshots and DOM snapshots (kept 30 days) |
+| **What can go wrong** | YouTube shows a bot check or consent page (reported as inconclusive, not a failure); the DOM text scan's patterns miss a new format; the vision check misreads a screenshot (false alarm or missed stat) |
 
 What counts as a stat to hide, and what must stay visible, is defined in [monitor/scope.mjs](monitor/scope.mjs). Both the vision check and the repair agent read it.
 
@@ -114,9 +114,9 @@ What counts as a stat to hide, and what must stay visible, is defined in [monito
 | | |
 |---|---|
 | **Actor** | AI agent (Claude), boxed in by automation |
-| **Does** | Reads the failed run's DOM snapshots and screenshots, edits `src/hide.css` or `src/content.js`, and re-runs the monitor on the affected pages until they pass or it hits a limit: 20 turns, 4 monitor runs or about $3 (see [Control spend](#control-spend)) |
+| **Does** | Reads the failed run's DOM snapshots and screenshots, edits `src/hide.css` or `src/content.js`, and re-runs the monitor on the affected pages until they pass or it hits a limit: 20 turns, 4 monitor runs, or about $3 (see [Control spend](#control-spend)) |
 | **Then** | A final monitor run on every page, done by the workflow rather than trusted from the agent, decides whether the fix is verified. Repairs always use the vision check, and a fix is verified only if it passes on every page, so nothing that should stay visible was hidden |
-| **Constraints** | The agent works only through its own tools: it can't run commands, reach the network, use git or see any credentials, and can edit only those two files. YouTube pages contain text written by strangers, so the agent is told to treat it as data, and nothing it writes is merged until the maintainer merges its PR |
+| **Constraints** | The agent works only through its own tools: it can't run commands, reach the network, use git, or see any credentials, and can edit only those two files. YouTube pages contain text written by strangers, so the agent is told to treat it as data, and nothing it writes is merged until the maintainer merges its PR |
 
 ### 5. A pull request is opened
 
@@ -124,9 +124,9 @@ What counts as a stat to hide, and what must stay visible, is defined in [monito
 |---|---|
 | **Actor** | Automation (`repair/open-pr.mjs`) |
 | **Does** | Commits the agent's change to a new branch and opens a PR labeled `auto-repair`: ready for review if verified; if not, a draft marked `[Unverified]` whose description lists the steps to finish it. No changes means no PR |
-| **The PR contains** | The agent's explanation (what broke, what changed, verification, notes for the reviewer), before-and-after screenshots, the final monitor results and the estimated cost |
+| **The PR contains** | The agent's explanation (what broke, what changed, verification, notes for the reviewer), before-and-after screenshots, the final monitor results, and the estimated cost |
 
-### 6. The maintainer reviews, refines and merges
+### 6. The maintainer reviews, refines, and merges
 
 | | |
 |---|---|
@@ -149,7 +149,7 @@ Each of these is a moment where a person has to understand something and decide.
 ### Notice that something is wrong
 
 - **Goal:** know about a breakage before viewers do.
-- **Decision:** is this a real breakage, a flaky run or YouTube blocking the runner?
+- **Decision:** is this a real breakage, a flaky run, or YouTube blocking the runner?
 - **Information needed:** which pages failed, what was visible, whether it repeated.
 - **Today:** GitHub emails the maintainer when a run fails. Failed scheduled runs notify whoever last changed the workflow's schedule; failed push runs notify the pusher. The run page lists each leftover stat with the element it was in, and the artifact has the screenshots. A repair PR also appears in the Pull requests tab.
 - **Blocked monitor:** inconclusive pages don't fail a run. But if a page is inconclusive in three monitor runs in a row, the run fails with a "Monitor blocked" error, so GitHub emails the maintainer instead of the monitor quietly stopping.
@@ -170,9 +170,9 @@ Each of these is a moment where a person has to understand something and decide.
 ### Update a PR
 
 - **Goal:** turn a PR that isn't quite right, or an unverified draft, into one worth merging.
-- **Information needed:** what the agent tried, what still fails and why it stopped.
+- **Information needed:** what the agent tried, what still fails, and why it stopped.
 - **Today:** the PR description says what the agent changed, why a draft isn't verified (a page still fails, the vision check didn't confirm a page, or the agent hit a limit) and the steps to finish it. The repair artifact (`repair-output-<run id>`) has the agent's monitor runs, and the failed run's artifact has the original evidence.
-- **How:** check out the PR branch and work with an AI coding agent such as Claude Code, giving it the PR description and those artifacts. Push the update to the PR branch, then run the **Verify repair PR** workflow from the Actions tab with the PR's number. If a check only errored and the fix is fine, skip the update and just run the workflow. If every page passes, including the vision check, it marks a draft ready for review, removes the finishing steps and comments the results; if not, it comments what still fails.
+- **How:** check out the PR branch and work with an AI coding agent such as Claude Code, giving it the PR description and those artifacts. Push the update to the PR branch, then run the **Verify repair PR** workflow from the Actions tab with the PR's number. If a check only errored and the fix is fine, skip the update and just run the workflow. If every page passes, including the vision check, it marks a draft ready for review, removes the finishing steps, and comments the results; if not, it comments what still fails.
 - **Or:** close the PR, which lets the next failing run try again from scratch.
 
 ### Keep repairs unblocked
@@ -190,7 +190,7 @@ Each of these is a moment where a person has to understand something and decide.
 
 - **Goal:** keep API costs predictable.
 - **Today:** each run's summary shows the vision check's estimated cost, and each repair PR shows the agent's. Weekly vision runs cost roughly $0.25 to $0.40 (an estimate, not yet measured). Repairs are capped at about $3 each, counting the agent and the vision checks in its monitor runs, and only one runs at a time. A hard breakage that needs more than that ends as an unverified draft for the maintainer to update.
-- **Totals:** [METRICS.md](https://github.com/jarett-lee/youtube-statistics-hider/blob/metrics/METRICS.md) has the average and total cost of repairs and vision tests.
+- **Totals:** [METRICS.md](https://github.com/jarett-lee/youtube-statistics-hider/blob/metrics/METRICS.md) has the average and total cost of repairs and vision checks.
 
 ## Gaps found by this analysis
 

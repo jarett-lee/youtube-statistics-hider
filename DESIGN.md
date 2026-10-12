@@ -76,7 +76,7 @@ What counts as a stat to hide, and what must stay visible, is defined in [monito
 
 The monitor runs in GitHub Actions:
 
-- **Twice a day**, on pushes that change the extension, the monitor or the repair agent, and on manual runs, with the DOM text scan only ([monitor.yml](.github/workflows/monitor.yml)).
+- **Twice a day**, on pushes that change the extension, the monitor, or the repair agent, and on manual runs, with the DOM text scan only ([monitor.yml](.github/workflows/monitor.yml)).
 - **Once a week** (Mondays), with the vision check as well, to limit API costs ([vision-weekly.yml](.github/workflows/vision-weekly.yml), which calls monitor.yml with the vision check turned on). To run the vision check on demand, start the workflow from the Actions tab and tick **Run the vision check**.
 
 Because most runs skip the vision check, problems only it can catch, such as content hidden by mistake, can take up to a week to show up.
@@ -98,7 +98,7 @@ Each page gets one of three results:
 - **fail:** a check found a problem, or the extension didn't load. A page that fails is loaded a second time before the failure counts.
 - **inconclusive:** YouTube showed a bot check or consent page instead of content, or the page didn't load. This doesn't fail the run. If a page is inconclusive in three monitor runs in a row, the run's `log` job fails with a "Monitor blocked" error ([metrics/blocked.mjs](metrics/blocked.mjs)), so GitHub emails you instead of the monitor quietly going blind.
 
-Screenshots, DOM snapshots and a summary of each run are saved to `monitor-output/`. In GitHub Actions, the summary appears on the run's page.
+Screenshots, DOM snapshots, and a summary of each run are saved to `monitor-output/`. In GitHub Actions, the summary appears on the run's page.
 
 ### Run artifacts
 
@@ -119,7 +119,7 @@ monitor-output/
       without-extension/   the same files for the page loaded without the extension
 ```
 
-- **Retention:** artifacts are deleted after 30 days, set by `retention-days` in the workflow. The run page, its summary and its logs stay after the artifact expires. You can delete an artifact early from the run page.
+- **Retention:** artifacts are deleted after 30 days, set by `retention-days` in the workflow. The run page, its summary, and its logs stay after the artifact expires. You can delete an artifact early from the run page.
 - **Size:** a run where every page passes is about 30 MB compressed. Failing pages are loaded twice, so failing runs are larger.
 - **Storage cost:** artifact storage is free for public repositories. In a private repository it counts toward the account's Actions storage quota (500 MB on the free plan), so retention would need to be much shorter.
 - **Access:** anyone who can see the repository and is signed in to GitHub can download artifacts.
@@ -135,20 +135,20 @@ Artifacts are for debugging recent runs. The long-term archive of DOM snapshots 
 
 ## Repair agent
 
-When a scheduled or manual monitor run on the default branch fails, the workflow's `repair` job starts the repair agent ([repair/agent.mjs](repair/agent.mjs)). Claude reads the failed run's DOM snapshots and screenshots, edits `src/hide.css` or `src/content.js`, and re-runs the monitor to check its fix. The workflow then runs a final monitor check on every page and opens a pull request ([repair/open-pr.mjs](repair/open-pr.mjs)) with the agent's explanation, before-and-after screenshots and the final results.
+When a scheduled or manual monitor run on the default branch fails, the workflow's `repair` job starts the repair agent ([repair/agent.mjs](repair/agent.mjs)). Claude reads the failed run's DOM snapshots and screenshots, edits `src/hide.css` or `src/content.js`, and re-runs the monitor to check its fix. The workflow then runs a final monitor check on every page and opens a pull request ([repair/open-pr.mjs](repair/open-pr.mjs)) with the agent's explanation, before-and-after screenshots, and the final results.
 
 - **Verified fixes** open as ready-for-review PRs. **Unverified fixes**, where a page still fails or the vision check didn't confirm every page, open as drafts with `[Unverified]` in the title and steps for finishing them. If the agent changes nothing, no PR is opened.
 - **Re-verifying a PR:** after updating a draft, or to retry a check that errored, run the **Verify repair PR** workflow ([verify-pr.yml](.github/workflows/verify-pr.yml)) from the Actions tab with the PR's number. It runs the monitor with the vision check against the PR's rules. If every page passes, it marks a draft ready for review, removes `[Unverified]` and the finishing steps, and updates the results; otherwise it comments what still fails. It runs from the default branch, which the Claude API federation rule trusts, and takes only `src/` from the PR.
 - **One repair PR at a time:** when pages fail, the monitor job checks for an open PR labeled `auto-repair`. If there is one, the repair job doesn't start at all, so a breakage that's already being fixed doesn't run the agent again on every later run. Merge or close the open repair PR to allow the next repair. If the check itself fails, no repair starts.
 - **Screenshots** in PR descriptions are stored on the `repair-screenshots` branch, which has its own history and is never merged.
 - **Vision check during repairs:** always on, in the agent's monitor runs and in the final check, because it's the only check for content hidden by mistake. A fix is verified only if the vision check passes on every page. Each monitor run is a separate process that does its own token exchange, and GitHub identity tokens can be exchanged only once (`jti_reused`), so the agent fetches a fresh token before and after each run.
-- **Limits:** the agent stops after 20 turns, 4 monitor runs or an estimated $3 of API usage, whichever comes first. The cost counts the agent itself and the vision checks in the monitor runs it starts; the final check can add a little on top. If the agent stops before the fix passes, the PR opens as a draft. Change these with `REPAIR_MAX_ITERATIONS`, `REPAIR_MAX_MONITOR_RUNS` and `REPAIR_MAX_COST_USD`.
-- **What the agent can do:** it works only through its own tools. It can read the evidence, the extension and its own monitor runs, view screenshots, edit `src/hide.css` and `src/content.js`, and run the monitor. It has no shell, network or git access, and never sees the GitHub token or the Claude API credentials. Because DOM snapshots contain text written by YouTube users, review every change to `src/content.js` with particular care.
+- **Limits:** the agent stops after 20 turns, 4 monitor runs, or an estimated $3 of API usage, whichever comes first. The cost counts the agent itself and the vision checks in the monitor runs it starts; the final check can add a little on top. If the agent stops before the fix passes, the PR opens as a draft. Change these with `REPAIR_MAX_ITERATIONS`, `REPAIR_MAX_MONITOR_RUNS`, and `REPAIR_MAX_COST_USD`.
+- **What the agent can do:** it works only through its own tools. It can read the evidence, the extension, and its own monitor runs, view screenshots, edit `src/hide.css` and `src/content.js`, and run the monitor. It has no shell, network, or git access, and never sees the GitHub token or the Claude API credentials. Because DOM snapshots contain text written by YouTube users, review every change to `src/content.js` with particular care.
 
 ### Setup
 
 1. **Give the workflow access to the Claude API** (for the vision check and the repair agent) with Workload Identity Federation. No long-lived key is stored in GitHub: each job exchanges a short-lived GitHub identity token for a Claude API token. See Anthropic's [GitHub Actions guide](https://platform.claude.com/docs/en/manage-claude/wif-providers/github-actions).
-   1. In the Claude Console, open **Settings** → **Workload identity** → **Connect workload** → **GitHub Actions**. Create a federation rule that matches only this repository's default branch: audience `https://api.anthropic.com`, `repository_owner` under `claims`, and a `subject_prefix` equal to the subject of the repo's GitHub identity tokens. Scheduled runs, manual runs and pushes on the default branch all use that subject. GitHub's subjects can include the numeric IDs of the owner and repo (`repo:<owner>@<owner id>/<repo>@<repo id>:ref:refs/heads/<branch>`), not just the names shown in Anthropic's guide. Get the exact subject with:
+   1. In the Claude Console, open **Settings** → **Workload identity** → **Connect workload** → **GitHub Actions**. Create a federation rule that matches only this repository's default branch: audience `https://api.anthropic.com`, `repository_owner` under `claims`, and a `subject_prefix` equal to the subject of the repo's GitHub identity tokens. Scheduled runs, manual runs, and pushes on the default branch all use that subject. GitHub's subjects can include the numeric IDs of the owner and repo (`repo:<owner>@<owner id>/<repo>@<repo id>:ref:refs/heads/<branch>`), not just the names shown in Anthropic's guide. Get the exact subject with:
 
       ```sh
       gh api repos/<owner>/<repo> --jq '"repo:\(.owner.login)@\(.owner.id)/\(.name)@\(.id):ref:refs/heads/\(.default_branch)"'
@@ -157,7 +157,7 @@ When a scheduled or manual monitor run on the default branch fails, the workflow
       If the token exchange fails with reason `match_subject_prefix`, the Console's authentication history (**Settings** → **Workload identity**) shows the subject the token actually had.
 
       The service account must be a member of the rule's workspace. It's automatically a member of the organization's default workspace; for any other workspace, add it as a member, or the exchange fails with reason `sa_not_in_workspace`.
-   2. In the GitHub repo, open **Settings** → **Secrets and variables** → **Actions**, switch to the **Variables** tab (not Secrets), and add `ANTHROPIC_FEDERATION_RULE_ID`, `ANTHROPIC_ORGANIZATION_ID` and `ANTHROPIC_SERVICE_ACCOUNT_ID`. Add `ANTHROPIC_WORKSPACE_ID` only if the rule covers more than one workspace. They're identifiers, not secrets: without a GitHub identity token from this repo they grant nothing. The workflow reads them as `vars.*`, so they must be variables; saved as secrets, the workflow wouldn't find them.
+   2. In the GitHub repo, open **Settings** → **Secrets and variables** → **Actions**, switch to the **Variables** tab (not Secrets), and add `ANTHROPIC_FEDERATION_RULE_ID`, `ANTHROPIC_ORGANIZATION_ID`, and `ANTHROPIC_SERVICE_ACCOUNT_ID`. Add `ANTHROPIC_WORKSPACE_ID` only if the rule covers more than one workspace. They're identifiers, not secrets: without a GitHub identity token from this repo they grant nothing. The workflow reads them as `vars.*`, so they must be variables; saved as secrets, the workflow wouldn't find them.
 
    [.github/anthropic-auth.sh](.github/anthropic-auth.sh) does the token exchange in each job.
 2. **Allow the workflow to open pull requests:** **Settings** → **Actions** → **General** → **Workflow permissions** → tick **Allow GitHub Actions to create and approve pull requests**. Leave the default permissions set to read: each job asks for only the permissions it needs.
@@ -168,7 +168,7 @@ To run the agent locally against a failed run's output (it edits `src/` in place
 node repair/agent.mjs monitor-output
 ```
 
-Results go to `repair-output/`: `result.json` (whether the fix was verified, cost and token usage), `summary.md` (the agent's report) and the monitor runs it made.
+Results go to `repair-output/`: `result.json` (whether the fix was verified, cost, and token usage), `summary.md` (the agent's report), and the monitor runs it made.
 
 ## Evaluation
 
@@ -182,12 +182,12 @@ These are the main result of the experiment. The current numbers are in [METRICS
 | **False positives** | The vision check's wrongly-hidden findings, on runs that use the vision check |
 | **Repair success rate** | Of repair PRs: verified on the first try, verified after re-checking with Verify repair PR, and merged. Repairs that failed to start, such as on a Claude API setup error, are counted separately |
 | **Cost per repair** | Each repair's estimated cost: the agent plus the vision checks in its monitor runs |
-| **Cost per vision test** | The estimated vision check cost of each monitor run that used it and each Verify repair PR run |
+| **Cost per vision check** | The estimated vision check cost of each monitor run that used it and each Verify repair PR run |
 | **Deliberate breakages** | Tests of the checks and the repair agent: a commit pushed to `main` that makes the monitor fail on purpose, either a planted fault (a broken hiding rule) or a stat added to the checks before the extension hides it. Whether any run on it failed a page and which check caught it, whether a repair PR fixed it, and what those runs cost |
 
 Costs are estimates from list prices; the Claude Console's usage page for the workspace has the actual spend. Health only covers the monitor's pages, loaded in English and signed out.
 
-Runs on a deliberate breakage, and Verify repair PR runs for its repair PR, are marked by hand with `"test": true` in `metrics.jsonl`, after the test. They count only in the deliberate-breakage rows, so Health, False positives and the repair rows reflect only real YouTube changes. So far every failure has been deliberate: the three stats added to the checks on 2026-10-07 (repair PRs #4, #6 and #7, all merged) and the two planted faults on 2026-10-12 (PRs #11 and #12, closed).
+Runs on a deliberate breakage, and Verify repair PR runs for its repair PR, are marked by hand with `"test": true` in `metrics.jsonl`, after the test. They count only in the deliberate-breakage rows, so Health, False positives, and the repair rows reflect only real YouTube changes. So far every failure has been deliberate: the three stats added to the checks on 2026-10-07 (repair PRs #4, #6, and #7, all merged) and the two planted faults on 2026-10-12 (PRs #11 and #12, closed).
 
 **How it's collected:** each workflow run builds one JSON line ([metrics/line.mjs](metrics/line.mjs)) and passes it to a small `log` job, the only job with write access to the `metrics` branch. That job appends it to `metrics.jsonl` ([metrics/append.mjs](metrics/append.mjs)) and regenerates METRICS.md from the whole log ([metrics/report.mjs](metrics/report.mjs)). The branch has its own history and is never merged, so the log doesn't add commits to `main`.
 
@@ -206,6 +206,6 @@ To measure how well the repair agent works, past page versions (taken from the a
   - **Rules:** prefer selectors that don't depend on text (element tags, IDs, structure) where YouTube's markup allows. Keep aria-label and text rules only as English fallbacks.
   - **Checks:** aria-labels are a reliable way for the monitor to recognize a stat, since they spell out what a number is, so the checks keep using them.
   - **Finding selectors:** the repair agent, and anyone developing locally, should use aria-labels to find a stat, then derive a selector that doesn't depend on the text.
-- **Privacy of user reports.** A logged-in YouTube page includes the user's name, avatar, recommendations and watch history. Reports must be opt-in, previewed before sending and scrubbed of personal information. They also can't go straight into a public GitHub issue.
-- **Report quality.** Reports can be mistaken, duplicated or deliberately misleading. The repair agent must confirm a problem against the reported snapshot before it proposes a fix, and the maintainer still decides whether to merge every repair PR.
-- **Flaky runs.** Slow page loads, consent dialogs, ads and network failures can make the monitor fail when nothing is actually broken. Pages that fail are loaded a second time, and bot checks and consent pages count as inconclusive, so the project doesn't open PRs for problems that don't exist.
+- **Privacy of user reports.** A logged-in YouTube page includes the user's name, avatar, recommendations, and watch history. Reports must be opt-in, previewed before sending, and scrubbed of personal information. They also can't go straight into a public GitHub issue.
+- **Report quality.** Reports can be mistaken, duplicated, or deliberately misleading. The repair agent must confirm a problem against the reported snapshot before it proposes a fix, and the maintainer still decides whether to merge every repair PR.
+- **Flaky runs.** Slow page loads, consent dialogs, ads, and network failures can make the monitor fail when nothing is actually broken. Pages that fail are loaded a second time, and bot checks and consent pages count as inconclusive, so the project doesn't open PRs for problems that don't exist.

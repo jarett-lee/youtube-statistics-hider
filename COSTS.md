@@ -7,12 +7,12 @@ What it costs to keep the YouTube Statistics Hider running. The only paid part i
 | What | When | Cost |
 |---|---|---|
 | DOM text scan, twice a day and on every push | Every run | Free (GitHub Actions on a public repository) |
-| Metrics log, screenshots and run artifacts | Every run | Free |
+| Metrics log, screenshots, and run artifacts | Every run | Free |
 | Vision check | Weekly, on Mondays | About $0.16–0.20 a run, so under $1 a month |
 | Repair agent | Only when a page fails | About $0.16–0.44 each so far, capped at about $3 a repair |
 | Verify repair PR | Only when the maintainer starts it | About $0.16 a run |
 
-In a month where nothing breaks, the total is **under $1**. Each YouTube change that needs a repair adds a few tens of cents. The running totals are in [METRICS.md](https://github.com/jarett-lee/youtube-statistics-hider/blob/metrics/METRICS.md) (cost per repair and per vision test). All figures are estimates from list prices; the Claude Console has the actual spend.
+In a month where nothing breaks, the total is **under $1**. Each YouTube change that needs a repair adds a few tens of cents. The running totals are in [METRICS.md](https://github.com/jarett-lee/youtube-statistics-hider/blob/metrics/METRICS.md) (cost per repair and per vision check). All figures are estimates from list prices; the Claude Console has the actual spend.
 
 ## Limits
 
