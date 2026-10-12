@@ -36,12 +36,6 @@ Screenshots from the repair pull requests, with the extension installed. "Before
 | **Planted fault:** a rule hid the video title ([PR #11](https://github.com/jarett-lee/youtube-statistics-hider/pull/11), a test) | ![Video page with the title missing under the player](https://raw.githubusercontent.com/jarett-lee/youtube-statistics-hider/c906bf204fc9964e80c7fddde3e0e186af0cba5d/38304906591/watch/before-1.png) | ![Video page with the title shown again](https://raw.githubusercontent.com/jarett-lee/youtube-statistics-hider/c906bf204fc9964e80c7fddde3e0e186af0cba5d/38304906591/watch/after-1.png) |
 | **Planted fault:** a rule collapsed the search results ([PR #12](https://github.com/jarett-lee/youtube-statistics-hider/pull/12), a test) | ![Search results cut off after the first result](https://raw.githubusercontent.com/jarett-lee/youtube-statistics-hider/c906bf204fc9964e80c7fddde3e0e186af0cba5d/38306705891/search/before-1.png) | ![Search results shown in full](https://raw.githubusercontent.com/jarett-lee/youtube-statistics-hider/c906bf204fc9964e80c7fddde3e0e186af0cba5d/38306705891/search/after-1.png) |
 
-In the search pair, "YouTube Music" is missing from the sidebar before the fix and back after it. The extension didn't hide it: it wasn't in that page load's HTML at all ([PR #12](https://github.com/jarett-lee/youtube-statistics-hider/pull/12)). Why it comes and goes isn't known. Likely causes, none of them verified:
-
-- Every page load is a fresh, signed-out browser profile with no cookies, so YouTube may put each one in a different experiment, with a different sidebar.
-- GitHub's runners don't all share one location, and YouTube may promote YouTube Music differently by region.
-- The sidebar may fill in after the rest of the page, so on some loads the screenshot is taken before the entry arrives.
-
 ## Using the extension
 
 The extension isn't published to the Chrome Web Store, and won't be: it's a proof of concept. To use it, load it from source (see [Load the extension locally](#load-the-extension-locally)).
