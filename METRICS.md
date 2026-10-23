@@ -1,10 +1,10 @@
 # Metrics
 
-How the YouTube Statistics Hider experiment is going, from 65 logged workflow runs (2026-10-06 to 2026-10-22). Generated from [metrics.jsonl](metrics.jsonl) after every run; costs are estimates from list prices. 19 of the runs tested a deliberate breakage and count only in the deliberate-breakage rows.
+How the YouTube Statistics Hider experiment is going, from 66 logged workflow runs (2026-10-06 to 2026-10-23). Generated from [metrics.jsonl](metrics.jsonl) after every run; costs are estimates from list prices. 19 of the runs tested a deliberate breakage and count only in the deliberate-breakage rows.
 
 | Metric | Value | Detail |
 |---|---|---|
-| Health | 100% of runs | 46 of 46 monitor runs on `main` had no failing page |
+| Health | 100% of runs | 47 of 47 monitor runs on `main` had no failing page |
 | False positives | 0 found | in 0 of 3 vision runs |
 | Repair success | – | No real breakage has needed a repair yet |
 | Cost per repair | – | No repairs yet |
